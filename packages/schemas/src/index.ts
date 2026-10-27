@@ -6,3 +6,4 @@ export * from './summary';
 export * from './talk';
 export * from './help';
 export * from './teach';
+export * from './greeting';
