@@ -29,6 +29,7 @@ const envSchema = z.object({
   AI_MAX_TOKENS: ms.default(1024),
   AI_PRICE_INPUT_PER_MTOK: price.default(0),
   AI_PRICE_OUTPUT_PER_MTOK: price.default(0),
+  AI_BASE_URL: z.url().optional(),
 });
 
 /** Reads AI settings from the environment. A bad value fails at startup with its name. */
@@ -43,5 +44,6 @@ export function loadAiConfig(env: NodeJS.ProcessEnv = process.env): AiConfig {
     minRetryWindowMs: e.AI_MIN_RETRY_WINDOW_MS,
     maxTokens: e.AI_MAX_TOKENS,
     pricePerMTok: { input: e.AI_PRICE_INPUT_PER_MTOK, output: e.AI_PRICE_OUTPUT_PER_MTOK },
+    ...(e.AI_BASE_URL && { baseUrl: e.AI_BASE_URL }),
   };
 }

@@ -20,8 +20,11 @@ export function SummaryView() {
     useSummaryStore(useShallow((s) => s));
 
   useEffect(() => {
-    void start(language);
+    // Start on the next tick: React StrictMode mounts, unmounts and mounts again in
+    // development, and a start that is cleared here never reaches Gemini (no wasted call).
+    const timer = setTimeout(() => void start(language), 0);
     return () => {
+      clearTimeout(timer);
       cancel();
       if (canSpeak()) window.speechSynthesis.cancel();
     };

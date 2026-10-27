@@ -24,5 +24,6 @@ export function createChatModel({ apiKey, config }: ChatModelOptions): ChatGoogl
     // Our guardedStream owns retries, so it can keep them inside the first-word budget.
     maxRetries: 0,
     streamUsage: true,
+    ...(config.baseUrl && { baseUrl: config.baseUrl }),
   });
 }
