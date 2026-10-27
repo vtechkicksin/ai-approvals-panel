@@ -3,6 +3,7 @@ import { usePanelStore, type ActionId } from '../../state/panelStore';
 import { BackIcon } from '../icons';
 import { ActionArt } from './ActionArt';
 import { ACTIONS } from './actions';
+import { SummaryView } from './SummaryView';
 
 export function ActionView({ action }: { action: ActionId }) {
   const back = usePanelStore((s) => s.back);
@@ -22,11 +23,15 @@ export function ActionView({ action }: { action: ActionId }) {
           {info.label}
         </h3>
       </div>
-      <div className="action-view__body">
-        <ActionArt action={action} />
-        <p className="action-view__blurb">{info.blurb}</p>
-        <p className="muted">Coming next: this action will be connected to the AI.</p>
-      </div>
+      {action === 'summary' ? (
+        <SummaryView />
+      ) : (
+        <div className="action-view__body">
+          <ActionArt action={action} />
+          <p className="action-view__blurb">{info.blurb}</p>
+          <p className="muted">Coming next: this action will be connected to the AI.</p>
+        </div>
+      )}
     </div>
   );
 }

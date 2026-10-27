@@ -1,7 +1,7 @@
 import type { ErrorRequestHandler, RequestHandler } from 'express';
 import type { ApiError } from '@approvals/schemas';
 
-function errorBody(code: string, message: string): ApiError {
+export function errorBody(code: string, message: string): ApiError {
   return { error: { code, message } };
 }
 

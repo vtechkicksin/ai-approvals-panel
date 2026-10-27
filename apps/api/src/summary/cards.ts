@@ -1,5 +1,13 @@
 import type { RankedApproval, SummaryCard } from '@approvals/schemas';
 
-export function toCards(_ranked: readonly RankedApproval[]): SummaryCard[] {
-  throw new Error('Not implemented');
+/** The parts of each ranked item the summary cards show. */
+export function toCards(ranked: readonly RankedApproval[]): SummaryCard[] {
+  return ranked.map(({ id, rank, title, type, effectivePriority, priorityReason }) => ({
+    id,
+    rank,
+    title,
+    type,
+    effectivePriority,
+    priorityReason,
+  }));
 }

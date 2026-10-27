@@ -529,6 +529,142 @@ button {
   box-shadow: var(--shadow-panel);
 }
 
+/* ---------- Summary view ---------- */
+
+.summary {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px 16px 16px;
+}
+
+.summary-state {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px 16px;
+  color: var(--text-muted);
+}
+
+.summary-state--error {
+  color: #991b1b;
+}
+
+.summary-state--error p {
+  margin: 0;
+}
+
+.summary-notice {
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: #fff7ed;
+  color: #9a3412;
+  font-size: 13px;
+}
+
+.summary-headline {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.45;
+  min-height: 1.45em;
+}
+
+.summary-cards {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.summary-card {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.summary-card__rank {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.summary-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  flex: 1;
+}
+
+.summary-card__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.summary-card__title {
+  font-weight: 500;
+}
+
+.summary-card__reason {
+  margin: 0;
+  font-size: 14px;
+  color: #374151;
+}
+
+.summary-card__reason.is-provisional {
+  color: var(--text-muted);
+}
+
+.verifying {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.text-skeleton {
+  display: block;
+  width: 70%;
+  height: 12px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #eef0f5 0%, #f7f8fb 50%, #eef0f5 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.2s infinite linear;
+}
+
+.summary-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 4px;
+  font-size: 13px;
+}
+
+.summary-footer__actions {
+  display: flex;
+  gap: 14px;
+}
+
+.link-button:disabled {
+  opacity: 0.5;
+  cursor: progress;
+  text-decoration: none;
+}
+
 /* Wide screens: keep the table clear of the open panel, as in the reference layout. */
 @media (min-width: 1000px) {
   .app:has(.assistant-panel) .page {

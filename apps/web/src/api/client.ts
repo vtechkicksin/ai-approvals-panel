@@ -14,9 +14,17 @@ export class ApiClientError extends Error {
   }
 }
 
-function isAbort(err: unknown): boolean {
+export function isAbort(err: unknown): boolean {
   // DOMException is not an Error subclass in every runtime, so check the name.
   return typeof err === 'object' && err !== null && (err as { name?: unknown }).name === 'AbortError';
+}
+
+/** Turns a non-2xx response into a friendly error, using the server's message when it sent one. */
+export async function errorFromResponse(res: Response): Promise<ApiClientError> {
+  const body: unknown = await res.json().catch(() => undefined);
+  const apiError = apiErrorSchema.safeParse(body);
+  if (apiError.success) return new ApiClientError(apiError.data.error.message, apiError.data.error.code);
+  return new ApiClientError('The server had a problem. Please try again.', 'http_error');
 }
 
 /**
@@ -36,13 +44,8 @@ async function requestJson<T>(path: string, schema: z.ZodType<T>, init: RequestI
     throw new ApiClientError("Can't reach the server. Check your connection and try again.", 'network_error');
   }
 
+  if (!res.ok) throw await errorFromResponse(res);
   const body: unknown = await res.json().catch(() => undefined);
-
-  if (!res.ok) {
-    const apiError = apiErrorSchema.safeParse(body);
-    if (apiError.success) throw new ApiClientError(apiError.data.error.message, apiError.data.error.code);
-    throw new ApiClientError('The server had a problem. Please try again.', 'http_error');
-  }
 
   const parsed = schema.safeParse(body);
   if (!parsed.success) {

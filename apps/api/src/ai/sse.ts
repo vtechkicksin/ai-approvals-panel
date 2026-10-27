@@ -1,4 +1,5 @@
 import type { Request, Response } from 'express';
+import type { z } from 'zod';
 import { textStreamEventSchema, type Language, type NoticeCode, type TextStreamEvent } from '@approvals/schemas';
 import type { AiFailureReason } from './errors';
 import type { GuardedEvent } from './guardedStream';
@@ -18,8 +19,8 @@ function noticeFor(reason: AiFailureReason | undefined): NoticeCode {
   return reason === 'first_token_timeout' ? 'ai_slow' : 'ai_unavailable';
 }
 
-/** Opens an SSE response. Every event is checked against the shared contract before it is written. */
-export function openSse(res: Response) {
+/** Opens an SSE response. Every event is checked against the given contract before it is written. */
+export function openSse<T>(res: Response, schema: z.ZodType<T>) {
   res.status(200).set({
     'Content-Type': 'text/event-stream; charset=utf-8',
     'Cache-Control': 'no-cache, no-transform',
@@ -28,8 +29,8 @@ export function openSse(res: Response) {
   });
   res.flushHeaders();
 
-  return (event: TextStreamEvent) => {
-    const checked = textStreamEventSchema.parse(event);
+  return (event: T) => {
+    const checked = schema.parse(event);
     if (!res.writableEnded && !res.destroyed) res.write(`data: ${JSON.stringify(checked)}\n\n`);
   };
 }
@@ -46,7 +47,7 @@ export async function streamTextAnswer({ res, language, run, fallback }: TextAns
     if (!res.writableEnded) client.abort();
   };
   res.on('close', onClose);
-  const send = openSse(res);
+  const send = openSse<TextStreamEvent>(res, textStreamEventSchema);
 
   try {
     let end: Extract<GuardedEvent, { type: 'end' }> | undefined;
