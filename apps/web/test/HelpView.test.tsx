@@ -63,7 +63,9 @@ describe('HelpView', () => {
       sse.send({ type: 'done', source: 'ai' });
       sse.close();
     });
-    await waitFor(() => expect(screen.getByRole('button', { name: /^ask$/i })).toBeEnabled());
+    await waitFor(() => expect(screen.getByLabelText('Answer')).toHaveAttribute('aria-busy', 'false'));
+    await userEvent.type(screen.getByRole('textbox', { name: /question/i }), 'Next question');
+    expect(screen.getByRole('button', { name: /^ask$/i })).toBeEnabled();
   });
 
   it('says when the policy does not cover the question, with a shortcut to Talk to me', async () => {

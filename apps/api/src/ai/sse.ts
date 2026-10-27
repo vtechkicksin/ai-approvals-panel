@@ -5,10 +5,14 @@ import type { AiFailureReason } from './errors';
 import type { GuardedEvent } from './guardedStream';
 import { message } from './messages';
 
-export interface TextAnswerOptions {
+export interface TextAnswerOptions<Extra = never> {
   req: Request;
   res: Response;
   language: Language;
+  /** The contract for the stream; defaults to plain text events. */
+  schema?: z.ZodType<TextStreamEvent | Extra>;
+  /** Events sent before the AI starts (e.g. Help me's citations). */
+  prelude?: Extra[];
   /** Runs the guarded AI stream; `signal` is aborted if the client disconnects. */
   run: (signal: AbortSignal) => AsyncIterable<GuardedEvent>;
   /** The backup answer when the AI fails before saying anything. */
@@ -41,15 +45,23 @@ export function openSse<T>(res: Response, schema: z.ZodType<T>) {
  * (done:fallback). Status is always 200 once streaming starts; a failure
  * anywhere becomes a friendly `error` event, never a raw 500.
  */
-export async function streamTextAnswer({ res, language, run, fallback }: TextAnswerOptions): Promise<void> {
+export async function streamTextAnswer<Extra = never>({
+  res,
+  language,
+  run,
+  fallback,
+  schema,
+  prelude = [],
+}: TextAnswerOptions<Extra>): Promise<void> {
   const client = new AbortController();
   const onClose = () => {
     if (!res.writableEnded) client.abort();
   };
   res.on('close', onClose);
-  const send = openSse<TextStreamEvent>(res, textStreamEventSchema);
+  const send = openSse<TextStreamEvent | Extra>(res, schema ?? textStreamEventSchema);
 
   try {
+    for (const event of prelude) send(event);
     let end: Extract<GuardedEvent, { type: 'end' }> | undefined;
     for await (const event of run(client.signal)) {
       if (event.type === 'end') end = event;

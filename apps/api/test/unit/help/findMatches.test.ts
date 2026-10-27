@@ -14,7 +14,7 @@ describe('findMatches on the real policy', () => {
   it.each([
     ['When should I reject an item?', 'policy-4'],
     ['What if an urgent item cannot be reviewed in a day?', 'policy-5'],
-    ['How do I review a video?', 'policy-3'],
+    ['Do I need to watch the video or read the PDF?', 'policy-3'],
     ['Which category gets high priority?', 'policy-2'],
   ])('finds the right section first for "%s"', (question, expected) => {
     const result = findMatches(question, retriever, chunks);

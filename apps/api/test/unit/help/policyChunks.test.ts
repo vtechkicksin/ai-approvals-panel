@@ -34,4 +34,12 @@ describe('splitPolicy', () => {
   it('skips empty sections', () => {
     expect(splitPolicy('## Empty\n\n## Full\n\nText.')).toEqual([{ id: 'policy-2', heading: 'Full', text: 'Text.' }]);
   });
+
+  it('joins lines that were only wrapped for width, but keeps lists, tables and paragraphs', () => {
+    const md = '## A\n\nOne sentence that was\nwrapped here.\n\nNew paragraph.\n1. First step\n2. Second step\n| a | b |\n| c | d |';
+
+    expect(splitPolicy(md)[0]!.text).toBe(
+      'One sentence that was wrapped here.\n\nNew paragraph.\n1. First step\n2. Second step\n| a | b |\n| c | d |',
+    );
+  });
 });

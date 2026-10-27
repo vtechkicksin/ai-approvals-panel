@@ -5,6 +5,7 @@ import { ActionArt } from './ActionArt';
 import { ACTIONS } from './actions';
 import { SummaryView } from './SummaryView';
 import { TalkView } from './TalkView';
+import { HelpView } from './HelpView';
 
 export function ActionView({ action }: { action: ActionId }) {
   const back = usePanelStore((s) => s.back);
@@ -28,6 +29,8 @@ export function ActionView({ action }: { action: ActionId }) {
         <SummaryView />
       ) : action === 'talk' ? (
         <TalkView />
+      ) : action === 'help' ? (
+        <HelpView />
       ) : (
         <div className="action-view__body">
           <ActionArt action={action} />

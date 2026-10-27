@@ -825,6 +825,96 @@ button {
   gap: 12px;
 }
 
+/* ---------- Help view ---------- */
+
+.help {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 14px 16px 16px;
+}
+
+.help-form {
+  display: flex;
+  gap: 8px;
+}
+
+.help-form input {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font: inherit;
+  font-size: 14px;
+}
+
+.help-form input:focus-visible {
+  border-color: var(--accent);
+}
+
+.help-examples {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.help-examples p {
+  margin: 0 0 4px;
+}
+
+.help-answer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.help-question {
+  margin: 0;
+  font-weight: 600;
+}
+
+.help-answer__text {
+  margin: 0;
+  font-size: 14px;
+  white-space: pre-wrap;
+}
+
+.help-sources {
+  width: 100%;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+
+.help-sources h4 {
+  margin: 0 0 6px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.help-sources ol {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding-left: 18px;
+  font-size: 13px;
+}
+
+.help-sources summary {
+  cursor: pointer;
+  color: var(--accent);
+}
+
+.help-sources details p {
+  margin: 4px 0 0;
+  color: var(--text-muted);
+}
+
 /* Wide screens: keep the table clear of the open panel, as in the reference layout. */
 @media (min-width: 1000px) {
   .app:has(.assistant-panel) .page {
