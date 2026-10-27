@@ -20,7 +20,7 @@ describe('createChatModel (Gemini)', () => {
 
     await drain(await model.stream('Hello'));
 
-    expect(fake.calls[0]!.url).toContain('/models/gemini-2.5-flash:streamGenerateContent');
+    expect(fake.calls[0]!.url).toContain('/models/gemini-3.1-flash-lite:streamGenerateContent');
     expect(fake.calls[0]!.url).toContain('alt=sse');
   });
 

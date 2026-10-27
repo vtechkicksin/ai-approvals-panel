@@ -4,7 +4,7 @@ import { installFakeGemini, type FakeGemini, type FakeReply } from './fakeGemini
 
 /** Short timeouts so failure paths run in milliseconds, not seconds. */
 export const testAiConfig: AiConfig = {
-  model: 'gemini-2.5-flash',
+  model: 'gemini-3.1-flash-lite',
   firstTokenTimeoutMs: 300,
   idleTimeoutMs: 150,
   minRetryWindowMs: 100,

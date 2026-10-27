@@ -44,7 +44,7 @@ describe('guardedStream', () => {
       expect(logger.records).toHaveLength(1);
       expect(logger.records[0]).toMatchObject({
         feature: 'test',
-        model: 'gemini-2.5-flash',
+        model: testAiConfig.model,
         outcome: 'complete',
         attempts: 1,
         inputTokens: 12,

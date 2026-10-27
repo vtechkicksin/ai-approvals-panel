@@ -1,9 +1,10 @@
 import { loadAiConfig } from '../../../src/ai/config';
 
 describe('loadAiConfig', () => {
-  it('defaults to Gemini 2.5 Flash, an 8s first-word limit, a 5s silence limit and free-tier pricing', () => {
+  it('defaults to Gemini 3.1 Flash-Lite, an 8s first-word limit, a 5s silence limit and free-tier pricing', () => {
     expect(loadAiConfig({})).toMatchObject({
-      model: 'gemini-2.5-flash',
+      // Free tier: gemini-2.5-flash allows only 20 requests/day; 3.1 Flash-Lite has its own quota and is faster.
+      model: 'gemini-3.1-flash-lite',
       firstTokenTimeoutMs: 8000,
       idleTimeoutMs: 5000,
       pricePerMTok: { input: 0, output: 0 },
