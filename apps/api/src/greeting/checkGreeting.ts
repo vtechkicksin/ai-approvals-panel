@@ -1,6 +1,20 @@
-import type { GreetingFacts } from '@approvals/schemas';
+import { GREETING_MAX_LENGTH, type GreetingFacts } from '@approvals/schemas';
 
-/** Accepts the AI's wording only if it is short and keeps the real count. */
-export function isGreetingValid(_text: string, _facts: GreetingFacts): boolean {
-  throw new Error('Not implemented');
+const numbersIn = (text: string): string[] => text.match(/\d+/g) ?? [];
+
+/**
+ * Accepts the AI's wording only if it is short, keeps the real total, and
+ * mentions no number that is not in the facts (no invented counts).
+ */
+export function isGreetingValid(text: string, facts: GreetingFacts): boolean {
+  const trimmed = text.trim();
+  if (!trimmed || trimmed.length > GREETING_MAX_LENGTH) return false;
+
+  const allowed = new Set([
+    String(facts.total),
+    ...Object.values(facts.counts).map(String),
+    ...numbersIn(facts.firstTitle ?? ''),
+  ]);
+  const used = numbersIn(trimmed);
+  return used.includes(String(facts.total)) && used.every((n) => allowed.has(n));
 }

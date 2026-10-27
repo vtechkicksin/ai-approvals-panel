@@ -4,6 +4,7 @@ import { ChatIcon } from '../icons';
 import { ActionGrid } from './ActionGrid';
 import { ActionView } from './ActionView';
 import { GreetingBar } from './GreetingBar';
+import { GreetingCard } from './GreetingCard';
 import { PanelFooter } from './PanelFooter';
 import { PanelHeader } from './PanelHeader';
 
@@ -35,7 +36,16 @@ export function AssistantPanel() {
     >
       <PanelHeader />
       <GreetingBar />
-      <div className="panel-body">{activeAction ? <ActionView action={activeAction} /> : <ActionGrid />}</div>
+      <div className="panel-body">
+        {activeAction ? (
+          <ActionView action={activeAction} />
+        ) : (
+          <>
+            <GreetingCard />
+            <ActionGrid />
+          </>
+        )}
+      </div>
       <PanelFooter />
     </section>
   );

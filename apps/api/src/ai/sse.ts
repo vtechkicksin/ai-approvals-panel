@@ -17,6 +17,8 @@ export interface TextAnswerOptions<Extra = never> {
   run: (signal: AbortSignal) => AsyncIterable<GuardedEvent>;
   /** The backup answer when the AI fails before saying anything. */
   fallback: () => string | Promise<string>;
+  /** Optional final check on the full AI text; if it fails, the backup answer replaces it. */
+  validate?: (fullText: string) => boolean;
 }
 
 function noticeFor(reason: AiFailureReason | undefined): NoticeCode {
@@ -52,6 +54,7 @@ export async function streamTextAnswer<Extra = never>({
   fallback,
   schema,
   prelude = [],
+  validate,
 }: TextAnswerOptions<Extra>): Promise<void> {
   const client = new AbortController();
   const onClose = () => {
@@ -63,13 +66,21 @@ export async function streamTextAnswer<Extra = never>({
   try {
     for (const event of prelude) send(event);
     let end: Extract<GuardedEvent, { type: 'end' }> | undefined;
+    let fullText = '';
     for await (const event of run(client.signal)) {
       if (event.type === 'end') end = event;
-      else if (event.chunk.text) send({ type: 'token', text: event.chunk.text });
+      else if (event.chunk.text) {
+        fullText += event.chunk.text;
+        send({ type: 'token', text: event.chunk.text });
+      }
     }
     if (client.signal.aborted) return; // nobody is listening any more
 
-    if (end?.outcome === 'complete') {
+    if (end?.outcome === 'complete' && validate && !validate(fullText)) {
+      // The streamed text was provisional; the checked backup replaces it.
+      send({ type: 'fallback', text: await fallback() });
+      send({ type: 'done', source: 'fallback' });
+    } else if (end?.outcome === 'complete') {
       send({ type: 'done', source: 'ai' });
     } else if (end?.outcome === 'cut_short') {
       send({ type: 'notice', code: 'cut_short', message: message(language, 'cut_short') });

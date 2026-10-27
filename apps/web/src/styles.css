@@ -987,6 +987,58 @@ button {
   font-weight: 600;
 }
 
+/* ---------- Greeting ---------- */
+
+.greeting-card {
+  display: flex;
+  gap: 12px;
+  margin: 16px 16px 0;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, #fffdf5 0%, var(--surface) 100%);
+}
+
+.greeting-card .panel-avatar {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  font-size: 16px;
+}
+
+.greeting-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.greeting-card__text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.greeting-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+  font-size: 12px;
+}
+
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.toggle input {
+  accent-color: var(--accent);
+}
+
 /* Wide screens: keep the table clear of the open panel, as in the reference layout. */
 @media (min-width: 1000px) {
   .app:has(.assistant-panel) .page {

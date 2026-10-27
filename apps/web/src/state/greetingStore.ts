@@ -1,5 +1,7 @@
 import { create } from 'zustand';
-import type { Language, PartOfDay } from '@approvals/schemas';
+import { textStreamEventSchema, type AnswerSource, type Language, type PartOfDay } from '@approvals/schemas';
+import { isAbort } from '../api/client';
+import { streamSse } from '../api/sseClient';
 
 export type GreetingStatus = 'idle' | 'streaming' | 'done';
 
@@ -23,9 +25,61 @@ interface GreetingActions {
 
 export const initialGreetingData: GreetingData = { aiWording: false, status: 'idle', aiText: null, note: null, replays: 0 };
 
-export const useGreetingStore = create<GreetingData & GreetingActions>()(() => ({
+const NOT_USED = 'AI wording unavailable, showing the standard greeting.';
+let running: AbortController | null = null;
+
+export const useGreetingStore = create<GreetingData & GreetingActions>()((set, get) => ({
   ...initialGreetingData,
-  setAiWording: () => {},
-  replay: async () => {},
-  cancel: () => {},
+
+  setAiWording: (on) => set({ aiWording: on, aiText: null, note: null }),
+
+  /**
+   * Shows the template again at once. With AI wording on, it then streams
+   * the AI's wording over it; anything other than an accepted AI reply
+   * leaves the template in place.
+   */
+  replay: async (language, partOfDay) => {
+    running?.abort();
+    running = null;
+    set((s) => ({ status: 'idle', aiText: null, note: null, replays: s.replays + 1 }));
+    if (!get().aiWording) return;
+
+    const run = new AbortController();
+    running = run;
+    set({ status: 'streaming' });
+    let text = '';
+    let source: AnswerSource | undefined;
+
+    try {
+      await streamSse({
+        path: '/api/ai/greeting',
+        body: { language, partOfDay },
+        schema: textStreamEventSchema,
+        isTerminal: (e) => e.type === 'done' || e.type === 'error',
+        onEvent: (event) => {
+          if (running !== run) return;
+          if (event.type === 'token') {
+            text += event.text;
+            set({ aiText: text });
+          } else if (event.type === 'done') {
+            source = event.source;
+          }
+        },
+        signal: run.signal,
+      });
+      if (running !== run) return;
+      if (source === 'ai') set({ status: 'done', aiText: text });
+      else set({ status: 'done', aiText: null, note: source === 'rules' ? null : NOT_USED });
+    } catch (err) {
+      if (running !== run || isAbort(err)) return;
+      set({ status: 'done', aiText: null, note: NOT_USED });
+    } finally {
+      if (running === run) running = null;
+    }
+  },
+
+  cancel: () => {
+    running?.abort();
+    running = null;
+  },
 }));
