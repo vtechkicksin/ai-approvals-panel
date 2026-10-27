@@ -20,6 +20,7 @@ export interface AiConfig {
   rateLimitPerIpPerMinute: number;
 }
 
+/** A positive whole number (milliseconds, tokens or counts). */
 const ms = z.coerce.number().int().positive();
 const price = z.coerce.number().nonnegative();
 
@@ -34,6 +35,8 @@ const envSchema = z.object({
   AI_PRICE_INPUT_PER_MTOK: price.default(0),
   AI_PRICE_OUTPUT_PER_MTOK: price.default(0),
   AI_BASE_URL: z.url().optional(),
+  AI_RATE_LIMIT_PER_MINUTE: ms.default(20),
+  AI_RATE_LIMIT_PER_IP_PER_MINUTE: ms.default(60),
 });
 
 /** Reads AI settings from the environment. A bad value fails at startup with its name. */
@@ -49,7 +52,7 @@ export function loadAiConfig(env: NodeJS.ProcessEnv = process.env): AiConfig {
     maxTokens: e.AI_MAX_TOKENS,
     pricePerMTok: { input: e.AI_PRICE_INPUT_PER_MTOK, output: e.AI_PRICE_OUTPUT_PER_MTOK },
     ...(e.AI_BASE_URL && { baseUrl: e.AI_BASE_URL }),
-    rateLimitPerMinute: 1_000_000, // not implemented yet
-    rateLimitPerIpPerMinute: 1_000_000,
+    rateLimitPerMinute: e.AI_RATE_LIMIT_PER_MINUTE,
+    rateLimitPerIpPerMinute: e.AI_RATE_LIMIT_PER_IP_PER_MINUTE,
   };
 }

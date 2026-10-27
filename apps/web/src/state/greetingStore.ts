@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { textStreamEventSchema, type AnswerSource, type Language, type PartOfDay } from '@approvals/schemas';
-import { isAbort } from '../api/client';
+import { ApiClientError, isAbort } from '../api/client';
 import { streamSse } from '../api/sseClient';
 
 export type GreetingStatus = 'idle' | 'streaming' | 'done';
@@ -72,7 +72,9 @@ export const useGreetingStore = create<GreetingData & GreetingActions>()((set, g
       else set({ status: 'done', aiText: null, note: source === 'rules' ? null : NOT_USED });
     } catch (err) {
       if (running !== run || isAbort(err)) return;
-      set({ status: 'done', aiText: null, note: NOT_USED });
+      // A rate limit says how long to wait; that is more useful than the generic note.
+      const note = err instanceof ApiClientError && err.code === 'rate_limited' ? err.message : NOT_USED;
+      set({ status: 'done', aiText: null, note });
     } finally {
       if (running === run) running = null;
     }

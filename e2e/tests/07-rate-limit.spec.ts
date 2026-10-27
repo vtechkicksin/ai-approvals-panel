@@ -6,14 +6,16 @@ test.describe('Rate limit', () => {
     const box = panel.getByRole('textbox', { name: 'Question' });
 
     // The suite allows 6 AI requests per session per minute. Off-policy questions are answered
-    // by rules (no Gemini call), but they still count towards the limit.
-    for (let i = 1; i <= 6; i++) {
-      await box.fill(`What is the weather on day ${i}?`);
+    // by rules (no Gemini call), but they still count towards the limit. (City names appear
+    // nowhere in the policy, so none of these match a section.)
+    const cities = ['Delhi', 'Mumbai', 'Pune', 'Jaipur', 'Bhopal', 'Lucknow'];
+    for (const city of cities) {
+      await box.fill(`What is the weather in ${city}?`);
       await panel.getByRole('button', { name: 'Ask', exact: true }).click();
       await expect(panel.getByText(/not covered by the approval policy/i)).toBeVisible();
     }
 
-    await box.fill('What is the weather on day 7?');
+    await box.fill('What is the weather in Shimla?');
     await panel.getByRole('button', { name: 'Ask', exact: true }).click();
 
     await expect(panel.getByRole('alert')).toContainText(/please wait about \d+ seconds/i);

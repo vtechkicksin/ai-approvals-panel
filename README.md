@@ -62,6 +62,8 @@ The end-to-end suite starts its own web app, API and fake Gemini server on ports
 | `AI_IDLE_TIMEOUT_MS` | `5000` | Max silence once the reply has started. |
 | `AI_MIN_RETRY_WINDOW_MS` | `1500` | Retry only if this much of the first-word budget is left. |
 | `AI_MAX_TOKENS` | `1024` | Max reply length. |
+| `AI_RATE_LIMIT_PER_MINUTE` | `20` | AI requests per browser session per minute. |
+| `AI_RATE_LIMIT_PER_IP_PER_MINUTE` | `60` | Backstop per IP address (a cleared cookie starts a new session). |
 | `AI_BASE_URL` | Google | Another Gemini endpoint (the E2E fake uses this). |
 | `AI_PRICE_INPUT_PER_MTOK` / `AI_PRICE_OUTPUT_PER_MTOK` | `0` | US$ per million tokens for the cost log (0 = free tier). |
 | `PORT`, `WEB_ORIGIN` | `4000`, `http://localhost:5173` | API port, and the only origin allowed by CORS. |
@@ -99,6 +101,8 @@ flowchart LR
 
 **One AI path.** Every model call goes through `guardedStream` ([apps/api/src/ai/guardedStream.ts](apps/api/src/ai/guardedStream.ts)). It races each step against its own abort signal, so neither a hung connection nor a silent stream can outlast the limits. It yields chunks and then exactly one end event, and never throws. A shared SSE writer ([apps/api/src/ai/sse.ts](apps/api/src/ai/sse.ts)) turns that into `token → done` or `notice → fallback → done` events.
 
+**Rate limits on every AI endpoint.** Each browser gets an anonymous, http-only session cookie on its first AI request (there is no login). Each session may make 20 AI requests a minute, and a per-IP backstop of 60 a minute stops a client that clears its cookie to get a fresh allowance. Over the limit, the API answers with a JSON `429 { error: { code: "rate_limited", message } }` that says how long to wait (in English or Hindi), plus `Retry-After` and standard `RateLimit` headers. The blocked request never reaches Gemini. Every action shows that message with a Try again option. The counters live in memory ([apps/api/src/middleware/rateLimit.ts](apps/api/src/middleware/rateLimit.ts)); with several API instances they would move to a Redis store.
+
 **Prompts are code.** Each prompt is a versioned export in [apps/api/src/prompts](apps/api/src/prompts) (`summary.v1.ts`, `talk.v1.ts`, `help.v1.ts`, `teach.v1.ts`, `greeting.v1.ts`), selected in `prompts/index.ts` and unit-tested. Queue and policy text are passed as data inside tagged blocks, and the prompt tells the model to treat them as data, not instructions.
 
 ### How each action works
@@ -124,7 +128,7 @@ flowchart LR
 | `POST /api/ai/greeting` | Optional AI wording of the greeting |
 | `GET /api/health` | Health check |
 
-All AI endpoints return `text/event-stream` with status 200 once streaming starts. Invalid requests get a JSON `400 { error: { code, message } }` before any AI call. Unknown routes get a JSON 404. Crashes become a friendly JSON 500 whose details are logged on the server, never sent to the client.
+All AI endpoints return `text/event-stream` with status 200 once streaming starts. Invalid requests get a JSON `400 { error: { code, message } }` before any AI call, and requests over the rate limit get a JSON `429` with a please-wait message. Unknown routes get a JSON 404. Crashes become a friendly JSON 500 whose details are logged on the server, never sent to the client.
 
 ### Data
 
@@ -147,9 +151,9 @@ Every AI call writes one JSON line to stdout: feature, model, outcome, failure r
 
 | Layer | Tool | Count | Highlights |
 |---|---|---|---|
-| Unit + integration (API) | Jest + Supertest | 273 | Every AI endpoint: success, Gemini down, first-word timeout, cut short, broken / wrong-shape / reordered AI output, missing key, bad input. The real LangChain + Google SDK run against a fake HTTP layer. |
-| Unit + component (web) | Vitest + Testing Library | 94 | Loading, streaming and error states of every view; malformed events never rendered; abort on close. |
-| End-to-end | Playwright | 17 | All five actions in Chromium against a scripted fake Gemini, including failure paths. |
+| Unit + integration (API) | Jest + Supertest | 285 | Every AI endpoint: success, Gemini down, first-word timeout, cut short, broken / wrong-shape / reordered AI output, missing key, bad input, rate limits. The real LangChain + Google SDK run against a fake HTTP layer. |
+| Unit + component (web) | Vitest + Testing Library | 98 | Loading, streaming and error states of every view; the please-wait message; malformed events never rendered; abort on close. |
+| End-to-end | Playwright | 18 | All five actions in Chromium against a scripted fake Gemini, including failure paths and the rate limit. |
 
 Learning tests ([apps/api/test/learning](apps/api/test/learning)) record how LangChain's Gemini client really behaves (streaming, abort, usage, errors) before the design relies on it.
 
@@ -173,12 +177,13 @@ The brief invites questions where it is ambiguous. These are the calls I made, a
 | Teach me | Adapts to follow-ups | Steps fixed from the policy; AI only for follow-ups | Consistent, correct steps; AI where it adds value. |
 | Greeting | Context-aware, not fixed | Template by default, AI wording optional and checked | The clearest "AI not needed" case. |
 | Dashboard scope | The panel | Panel + a read-only approvals table | Gives the panel context without rebuilding the full dashboard. |
+| "Per-session" rate limiting | Basic, explained | Anonymous session cookie (20/min) + per-IP backstop (60/min) on `/api/ai/*` only | There is no login, so the cookie is the session; the IP limit stops cookie clearing from bypassing it. |
 
 ---
 
 ## Status and known limitations
 
-- **Not built yet: per-session rate limiting** on the AI endpoints (planned: `express-rate-limit` keyed by an anonymous session cookie, about 20 AI requests per minute, with a friendly "please wait" message).
+- **Rate-limit counters are in memory**: they reset when the API restarts and are per instance. A Redis store would share them across instances.
 - **Free-tier quota.** Gemini's free tier has daily limits per model. When they are reached, Gemini returns 429 and every action shows its fallback; 429 is deliberately not retried. Set `AI_MODEL` to switch models.
 - **Placeholder policy.** `approval-policy.md` is sample text; the Help me search tests run against it and should be re-checked when it is replaced.
 - **Hindi.** Item titles and policy text stay in English inside Hindi answers.
@@ -201,6 +206,7 @@ apps/
     src/teach/         guide from the policy, backup text
     src/talk/          chat history
     src/greeting/      AI wording check
+    src/middleware/    session cookie, rate limits, error handling
     test/              unit, integration, learning tests + fake Gemini helper
   web/                 React + Vite app
     src/api/           fetch + SSE clients (validate everything)
