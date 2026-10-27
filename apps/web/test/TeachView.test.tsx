@@ -200,4 +200,14 @@ describe('TeachView', () => {
 
     await waitFor(() => expect(teachBody(0).language).toBe('hi'));
   });
+
+  it('shows the please-wait message when the AI is rate limited', async () => {
+    route(jsonResponse({ error: { code: 'rate_limited', message: 'Please wait about 30 seconds and try again.' } }, 429));
+    renderWithProviders(<TeachView />);
+    await screen.findByText('Step 1 of 5');
+
+    await askFollowUp('Why?');
+
+    expect(await screen.findByText('Please wait about 30 seconds and try again.')).toBeInTheDocument();
+  });
 });

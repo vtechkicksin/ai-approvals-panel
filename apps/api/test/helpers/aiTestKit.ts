@@ -10,6 +10,8 @@ export const testAiConfig: AiConfig = {
   minRetryWindowMs: 100,
   maxTokens: 512,
   pricePerMTok: { input: 0.3, output: 2.5 },
+  rateLimitPerMinute: 20,
+  rateLimitPerIpPerMinute: 60,
 };
 
 const installed: FakeGemini[] = [];

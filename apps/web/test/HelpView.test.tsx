@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { HelpView } from '../src/components/assistant/HelpView';
 import { initialHelpData, useHelpStore } from '../src/state/helpStore';
 import { usePanelStore } from '../src/state/panelStore';
-import { controlledSse, pendingFetch, renderWithProviders, resetPanelStore, sseResponse } from './helpers';
+import { controlledSse, jsonResponse, pendingFetch, renderWithProviders, resetPanelStore, sseResponse } from './helpers';
 
 const fetchMock = vi.fn<typeof fetch>();
 
@@ -153,5 +153,14 @@ describe('HelpView', () => {
 
     expect(screen.getByRole('button', { name: /^ask$/i })).toBeDisabled();
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('shows the please-wait message when the AI is rate limited', async () => {
+    fetchMock.mockResolvedValue(jsonResponse({ error: { code: 'rate_limited', message: 'Please wait about 30 seconds and try again.' } }, 429));
+    renderWithProviders(<HelpView />);
+
+    await ask('When should I reject?');
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Please wait about 30 seconds and try again.');
   });
 });

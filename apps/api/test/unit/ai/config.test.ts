@@ -39,4 +39,12 @@ describe('loadAiConfig', () => {
     expect(loadAiConfig({ AI_BASE_URL: 'http://localhost:4900' }).baseUrl).toBe('http://localhost:4900');
     expect(() => loadAiConfig({ AI_BASE_URL: 'not a url' })).toThrow(/AI_BASE_URL/);
   });
+
+  it('limits AI requests to 20 a minute per session, with a 60 a minute backstop per IP', () => {
+    expect(loadAiConfig({})).toMatchObject({ rateLimitPerMinute: 20, rateLimitPerIpPerMinute: 60 });
+    expect(
+      loadAiConfig({ AI_RATE_LIMIT_PER_MINUTE: '5', AI_RATE_LIMIT_PER_IP_PER_MINUTE: '15' }),
+    ).toMatchObject({ rateLimitPerMinute: 5, rateLimitPerIpPerMinute: 15 });
+    expect(() => loadAiConfig({ AI_RATE_LIMIT_PER_MINUTE: '0' })).toThrow(/AI_RATE_LIMIT_PER_MINUTE/);
+  });
 });

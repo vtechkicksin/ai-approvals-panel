@@ -14,6 +14,10 @@ export interface AiConfig {
   pricePerMTok: PricePerMTok;
   /** Another Gemini endpoint (e.g. the fake one in end-to-end tests); undefined = Google. */
   baseUrl?: string;
+  /** AI requests allowed per browser session per minute. */
+  rateLimitPerMinute: number;
+  /** Backstop per IP address per minute (a cleared cookie starts a new session). */
+  rateLimitPerIpPerMinute: number;
 }
 
 const ms = z.coerce.number().int().positive();
@@ -45,5 +49,7 @@ export function loadAiConfig(env: NodeJS.ProcessEnv = process.env): AiConfig {
     maxTokens: e.AI_MAX_TOKENS,
     pricePerMTok: { input: e.AI_PRICE_INPUT_PER_MTOK, output: e.AI_PRICE_OUTPUT_PER_MTOK },
     ...(e.AI_BASE_URL && { baseUrl: e.AI_BASE_URL }),
+    rateLimitPerMinute: 1_000_000, // not implemented yet
+    rateLimitPerIpPerMinute: 1_000_000,
   };
 }

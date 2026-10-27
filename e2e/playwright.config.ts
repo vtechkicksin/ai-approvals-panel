@@ -43,6 +43,10 @@ export default defineConfig({
         AI_FIRST_TOKEN_TIMEOUT_MS: '2000',
         AI_IDLE_TIMEOUT_MS: '1000',
         AI_MIN_RETRY_WINDOW_MS: '500',
+        // Each test is a new browser session; 6 per session leaves room for every journey,
+        // and the rate-limit journey goes past it. The per-IP backstop is out of the way.
+        AI_RATE_LIMIT_PER_MINUTE: '6',
+        AI_RATE_LIMIT_PER_IP_PER_MINUTE: '1000',
       },
       reuseExistingServer: false,
     },

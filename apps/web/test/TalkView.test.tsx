@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { TalkView } from '../src/components/assistant/TalkView';
 import { usePanelStore } from '../src/state/panelStore';
 import { initialTalkData, useTalkStore } from '../src/state/talkStore';
-import { controlledSse, pendingFetch, renderWithProviders, resetPanelStore, sseResponse } from './helpers';
+import { controlledSse, jsonResponse, pendingFetch, renderWithProviders, resetPanelStore, sseResponse } from './helpers';
 
 const fetchMock = vi.fn<typeof fetch>();
 
@@ -219,5 +219,15 @@ describe('TalkView', () => {
     await userEvent.click(screen.getByRole('button', { name: /clear conversation/i }));
 
     expect(within(log()).queryByText('Which first?')).not.toBeInTheDocument();
+  });
+
+  it('shows the please-wait message when the AI is rate limited', async () => {
+    fetchMock.mockResolvedValue(jsonResponse({ error: { code: 'rate_limited', message: 'Please wait about 30 seconds and try again.' } }, 429));
+    renderWithProviders(<TalkView />);
+
+    await say('Hello');
+
+    expect(await within(log()).findByText('Please wait about 30 seconds and try again.')).toBeInTheDocument();
+    expect(within(log()).getByRole('button', { name: /try again/i })).toBeInTheDocument();
   });
 });

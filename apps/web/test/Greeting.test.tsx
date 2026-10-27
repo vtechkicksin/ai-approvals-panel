@@ -155,4 +155,16 @@ describe('Greeting', () => {
     expect(usePanelStore.getState().activeAction).toBeNull();
     await waitFor(() => expect(greeting()).toHaveTextContent(TEMPLATE));
   });
+
+  it('shows the please-wait message when AI wording is rate limited, and keeps the template', async () => {
+    route([jsonResponse({ error: { code: 'rate_limited', message: 'Please wait about 30 seconds and try again.' } }, 429)]);
+    renderWithProviders(<AssistantPanel />);
+    await waitFor(() => expect(greeting()).toHaveTextContent(TEMPLATE));
+
+    await userEvent.click(screen.getByRole('checkbox', { name: /let ai word it/i }));
+    await userEvent.click(screen.getByRole('button', { name: /replay greeting/i }));
+
+    expect(await screen.findByText('Please wait about 30 seconds and try again.')).toBeInTheDocument();
+    expect(greeting()).toHaveTextContent(TEMPLATE);
+  });
 });

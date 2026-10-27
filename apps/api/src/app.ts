@@ -4,6 +4,8 @@ import { healthResponseSchema, type ApprovalItem, type HealthResponse } from '@a
 import { approvalsRouter } from './approvals/approvalsRouter';
 import { loadApprovals, loadPolicyMarkdown, loadPriorityTable } from './data/seedData';
 import { errorHandler, notFound } from './middleware/errors';
+import { aiRateLimit } from './middleware/rateLimit';
+import { sessionCookie } from './middleware/session';
 import type { PriorityTable } from './policy/priorityTable';
 import type { ChatGoogleGenerativeAI } from '@langchain/google-genai';
 import { createChatModel } from './ai/chatModel';
@@ -62,6 +64,8 @@ export function createApp(deps: AppDeps = defaultDeps()): Express {
     res.json(body);
   });
   app.use('/api/approvals', approvalsRouter(deps));
+  // Every AI endpoint: an anonymous session, then the rate limits, then the route.
+  app.use('/api/ai', sessionCookie, ...aiRateLimit(deps.ai.config));
   app.use('/api/ai/summary', summaryRouter(deps));
   app.use('/api/ai/talk', talkRouter(deps));
   app.use('/api/ai/help', helpRouter(deps));
