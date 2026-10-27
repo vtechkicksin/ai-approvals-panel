@@ -665,6 +665,166 @@ button {
   text-decoration: none;
 }
 
+/* ---------- Talk view ---------- */
+
+.action-view {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+.talk {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.panel-body:has(.talk) {
+  overflow: hidden;
+}
+
+.panel-body:has(.talk) .action-view {
+  height: 100%;
+}
+
+.talk-log {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 0;
+  padding: 14px 16px;
+  overflow-y: auto;
+}
+
+.talk-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.talk-empty p {
+  margin: 0 0 4px;
+}
+
+.chip-button {
+  padding: 6px 12px;
+  border: 1px solid #ddd0fb;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: #5b21b6;
+  font-size: 13px;
+  text-align: left;
+}
+
+.chip-button:hover {
+  border-color: var(--accent);
+}
+
+.chat-msg {
+  max-width: 88%;
+  padding: 10px 12px;
+  border-radius: 14px;
+  font-size: 14px;
+}
+
+.chat-msg p {
+  margin: 0;
+}
+
+.chat-msg__text {
+  white-space: pre-wrap;
+}
+
+.chat-msg--user {
+  align-self: flex-end;
+  background: var(--accent);
+  color: #fff;
+  border-bottom-right-radius: 4px;
+}
+
+.chat-msg--assistant {
+  align-self: flex-start;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--surface-muted);
+  border: 1px solid var(--border);
+  border-bottom-left-radius: 4px;
+}
+
+.chat-msg--error {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #991b1b;
+}
+
+.chat-msg__notice {
+  font-size: 12px;
+  color: #9a3412;
+}
+
+.chat-shortcuts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.typing {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px 0;
+}
+
+.typing span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  animation: typing 1s infinite ease-in-out;
+}
+
+.typing span:nth-child(2) { animation-delay: 0.15s; }
+.typing span:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes typing {
+  0%, 80%, 100% { opacity: 0.3; transform: translateY(0); }
+  40% { opacity: 1; transform: translateY(-3px); }
+}
+
+.talk-composer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px 12px;
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.talk-composer textarea {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font: inherit;
+  font-size: 14px;
+  resize: none;
+}
+
+.talk-composer textarea:focus-visible {
+  border-color: var(--accent);
+}
+
+.talk-composer__actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
 /* Wide screens: keep the table clear of the open panel, as in the reference layout. */
 @media (min-width: 1000px) {
   .app:has(.assistant-panel) .page {
