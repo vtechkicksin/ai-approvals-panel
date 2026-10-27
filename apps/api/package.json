@@ -1,0 +1,26 @@
+{
+  "name": "@approvals/api",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Express API: AI decision layer for the approvals assistant",
+  "scripts": {
+    "dev": "tsx watch --env-file-if-exists=.env src/server.ts",
+    "start": "tsx --env-file-if-exists=.env src/server.ts",
+    "test": "jest",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/jest": "^30.0.0",
+    "@types/supertest": "^7.2.1",
+    "jest": "^30.5.2",
+    "supertest": "^7.3.1",
+    "ts-jest": "^29.4.15",
+    "tsx": "^4.23.15"
+  },
+  "dependencies": {
+    "@approvals/schemas": "^0.0.0",
+    "express": "^5.3.0",
+    "zod": "^4.6.7"
+  }
+}
