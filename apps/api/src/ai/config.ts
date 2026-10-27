@@ -12,6 +12,8 @@ export interface AiConfig {
   maxTokens: number;
   /** For the cost log. Defaults to 0 (free tier). */
   pricePerMTok: PricePerMTok;
+  /** Another Gemini endpoint (e.g. the fake one in end-to-end tests); undefined = Google. */
+  baseUrl?: string;
 }
 
 const ms = z.coerce.number().int().positive();

@@ -72,4 +72,21 @@ describe('createChatModel (Gemini)', () => {
       process.off('unhandledRejection', onUnhandled);
     }
   });
+
+  it('sends requests to the configured base URL', async () => {
+    const calls: string[] = [];
+    const realFetch = globalThis.fetch;
+    globalThis.fetch = (async (input: string | URL | Request) => {
+      calls.push(String(input));
+      return new Response(JSON.stringify({ error: { code: 503, message: 'x', status: 'UNAVAILABLE' } }), { status: 503 });
+    }) as typeof fetch;
+    try {
+      const model = createChatModel({ apiKey: 'k', config: { ...testAiConfig, baseUrl: 'http://localhost:4900' } });
+      await (async () => drain(await model.stream('Hi')))().catch(() => {});
+    } finally {
+      globalThis.fetch = realFetch;
+    }
+
+    expect(calls[0]).toMatch(/^http:\/\/localhost:4900\/v1beta\/models\/gemini-3\.1-flash-lite:streamGenerateContent/);
+  });
 });

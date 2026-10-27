@@ -33,4 +33,10 @@ describe('loadAiConfig', () => {
     expect(() => loadAiConfig({ AI_IDLE_TIMEOUT_MS: '-5' })).toThrow(/AI_IDLE_TIMEOUT_MS/);
     expect(() => loadAiConfig({ AI_PRICE_INPUT_PER_MTOK: '-1' })).toThrow(/AI_PRICE_INPUT_PER_MTOK/);
   });
+
+  it('can point at another Gemini endpoint (used by the end-to-end tests)', () => {
+    expect(loadAiConfig({}).baseUrl).toBeUndefined();
+    expect(loadAiConfig({ AI_BASE_URL: 'http://localhost:4900' }).baseUrl).toBe('http://localhost:4900');
+    expect(() => loadAiConfig({ AI_BASE_URL: 'not a url' })).toThrow(/AI_BASE_URL/);
+  });
 });

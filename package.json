@@ -3,7 +3,8 @@
   "private": true,
   "workspaces": [
     "packages/*",
-    "apps/*"
+    "apps/*",
+    "e2e"
   ],
   "engines": {
     "node": ">=22"
@@ -11,7 +12,8 @@
   "scripts": {
     "dev": "concurrently -n api,web -c blue,magenta \"npm -w @approvals/api run dev\" \"npm -w @approvals/web run dev\"",
     "test": "npm run test --workspaces --if-present",
-    "typecheck": "npm run typecheck --workspaces --if-present"
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test:e2e": "npm -w @approvals/e2e run e2e"
   },
   "devDependencies": {
     "@types/node": "^24.19.2",
