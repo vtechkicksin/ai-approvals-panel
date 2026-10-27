@@ -1,3 +1,4 @@
+import cors from 'cors';
 import express, { type Express } from 'express';
 import { healthResponseSchema, type ApprovalItem, type HealthResponse } from '@approvals/schemas';
 import { approvalsRouter } from './approvals/approvalsRouter';
@@ -24,6 +25,8 @@ export function defaultDeps(): AppDeps {
 
 export function createApp(deps: AppDeps = defaultDeps()): Express {
   const app = express();
+  // The browser app calls the API directly; only its origin may, with cookies.
+  app.use(cors({ origin: [deps.webOrigin], credentials: true }));
   app.use(express.json());
 
   app.get('/api/health', (_req, res) => {

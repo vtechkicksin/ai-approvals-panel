@@ -6,6 +6,7 @@ export type Language = 'en' | 'hi';
 interface PanelData {
   isOpen: boolean;
   isExpanded: boolean;
+  /** null = the action cards are showing. */
   activeAction: ActionId | null;
   language: Language;
 }
@@ -28,14 +29,12 @@ export const initialPanelData: PanelData = {
   language: 'en',
 };
 
-const notImplemented = () => {};
-
-export const usePanelStore = create<PanelState>()(() => ({
+export const usePanelStore = create<PanelState>()((set) => ({
   ...initialPanelData,
-  open: notImplemented,
-  close: notImplemented,
-  toggleExpanded: notImplemented,
-  openAction: notImplemented,
-  back: notImplemented,
-  setLanguage: notImplemented,
+  open: () => set({ isOpen: true }),
+  close: () => set({ isOpen: false }),
+  toggleExpanded: () => set((s) => ({ isExpanded: !s.isExpanded })),
+  openAction: (action) => set({ activeAction: action }),
+  back: () => set({ activeAction: null }),
+  setLanguage: (language) => set({ language }),
 }));
