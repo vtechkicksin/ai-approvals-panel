@@ -38,6 +38,17 @@ describe('SummaryView', () => {
     expect(screen.getByRole('status')).toHaveTextContent(/reviewing the approvals queue/i);
   });
 
+  it('sends no request if it closes straight away (as React StrictMode does on mount in development)', async () => {
+    fetchMock.mockImplementation(pendingFetch);
+
+    const { unmount } = renderWithProviders(<SummaryView />);
+    unmount();
+    await new Promise((resolve) => setTimeout(resolve, 20));
+
+    // Otherwise every open would send two Gemini requests in development (one cancelled at once).
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
   it('requests the summary in the operator\'s language', async () => {
     usePanelStore.setState({ language: 'hi' });
     fetchMock.mockImplementation(pendingFetch);
