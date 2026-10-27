@@ -1,7 +1,7 @@
 import type { ReactElement } from 'react';
 import { render } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import type { ApprovalsResponse, RankedApproval } from '@approvals/schemas';
+import type { ApprovalsResponse, RankedApproval, SummaryCard, SummaryStreamEvent } from '@approvals/schemas';
 import { initialPanelData, usePanelStore } from '../src/state/panelStore';
 
 export function renderWithProviders(ui: ReactElement) {
@@ -79,3 +79,45 @@ export function jsonResponse(body: unknown, status = 200): Response {
 
 /** A fetch that never answers: keeps components in their loading state. */
 export const pendingFetch = () => new Promise<Response>(() => {});
+
+/** A streamed SSE response the test controls event by event. */
+export function controlledSse() {
+  const encoder = new TextEncoder();
+  let controller!: ReadableStreamDefaultController<Uint8Array>;
+  const body = new ReadableStream<Uint8Array>({
+    start(c) {
+      controller = c;
+    },
+  });
+  return {
+    response: new Response(body, { status: 200, headers: { 'content-type': 'text/event-stream' } }),
+    send: (event: unknown) => controller.enqueue(encoder.encode(`data: ${JSON.stringify(event)}\n\n`)),
+    raw: (text: string) => controller.enqueue(encoder.encode(text)),
+    close: () => controller.close(),
+    fail: (err: Error) => controller.error(err),
+  };
+}
+
+/** A finished SSE response with these events. */
+export function sseResponse(events: unknown[]): Response {
+  const text = events.map((e) => `data: ${JSON.stringify(e)}\n\n`).join('');
+  return new Response(text, { status: 200, headers: { 'content-type': 'text/event-stream' } });
+}
+
+
+export const summaryCards: SummaryCard[] = rankedApprovals.map((a) => ({
+  id: a.id,
+  rank: a.rank,
+  title: a.title,
+  type: a.type,
+  effectivePriority: a.effectivePriority,
+  priorityReason: a.priorityReason,
+}));
+
+export const skeletonEvent: SummaryStreamEvent = { type: 'skeleton', items: summaryCards, total: summaryCards.length };
+
+export const finalSummary = {
+  headline: 'Four approvals are waiting; start with the urgent camera map.',
+  items: summaryCards.map((c) => ({ id: c.id, reason: `AI reason for ${c.id}` })),
+  spokenScript: 'You have four approvals waiting.',
+};

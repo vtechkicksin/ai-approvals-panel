@@ -7,8 +7,11 @@ export type Language = z.infer<typeof languageSchema>;
 export const noticeCodeSchema = z.enum(['ai_slow', 'ai_unavailable', 'cut_short', 'rate_limited']);
 export type NoticeCode = z.infer<typeof noticeCodeSchema>;
 
-/** Where the final answer came from. */
-export const answerSourceSchema = z.enum(['ai', 'partial', 'fallback']);
+/**
+ * Where the final answer came from: the AI, partly AI with rule-based gaps,
+ * a rule-based backup after an AI failure, or rules because AI was not needed.
+ */
+export const answerSourceSchema = z.enum(['ai', 'partial', 'fallback', 'rules']);
 export type AnswerSource = z.infer<typeof answerSourceSchema>;
 
 /**
