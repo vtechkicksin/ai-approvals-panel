@@ -64,8 +64,8 @@ describe('AssistantPanel', () => {
   it('opens an action view and goes back to the cards', async () => {
     renderWithProviders(<AssistantPanel />);
 
-    await userEvent.click(within(panel()).getByRole('button', { name: 'Talk to me' }));
-    expect(within(panel()).getByRole('heading', { name: 'Talk to me' })).toBeInTheDocument();
+    await userEvent.click(within(panel()).getByRole('button', { name: 'Teach me' }));
+    expect(within(panel()).getByRole('heading', { name: 'Teach me' })).toBeInTheDocument();
     await userEvent.click(within(panel()).getByRole('button', { name: /back/i }));
 
     await userEvent.click(within(panel()).getByRole('button', { name: 'Present me Summary' }));
@@ -105,5 +105,13 @@ describe('AssistantPanel', () => {
     await waitFor(() =>
       expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining('/api/ai/summary'), expect.anything()),
     );
+  });
+
+  it('opening Talk to me shows the chat', async () => {
+    renderWithProviders(<AssistantPanel />);
+
+    await userEvent.click(within(panel()).getByRole('button', { name: 'Talk to me' }));
+
+    expect(within(panel()).getByRole('textbox', { name: /message/i })).toBeInTheDocument();
   });
 });

@@ -10,6 +10,7 @@ import { createChatModel } from './ai/chatModel';
 import { loadAiConfig, type AiConfig } from './ai/config';
 import { createConsoleCostLogger, type CostLogger } from './ai/costLog';
 import { summaryRouter } from './summary/summaryRouter';
+import { talkRouter } from './talk/talkRouter';
 
 export interface AiDeps {
   config: AiConfig;
@@ -55,6 +56,7 @@ export function createApp(deps: AppDeps = defaultDeps()): Express {
   });
   app.use('/api/approvals', approvalsRouter(deps));
   app.use('/api/ai/summary', summaryRouter(deps));
+  app.use('/api/ai/talk', talkRouter(deps));
 
   app.use(notFound);
   app.use(errorHandler);
