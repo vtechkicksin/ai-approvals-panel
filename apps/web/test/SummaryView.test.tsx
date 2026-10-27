@@ -183,30 +183,85 @@ describe('SummaryView', () => {
   });
 
   describe('read aloud', () => {
+    /** A fake browser speech API that records calls and lets the test end the speech. */
+    function fakeSpeech() {
+      const spoken: { text: string; lang: string; onend: (() => void) | null }[] = [];
+      const synth = { speak: vi.fn((u: (typeof spoken)[number]) => spoken.push(u)), cancel: vi.fn(), pause: vi.fn(), resume: vi.fn() };
+      Object.defineProperty(window, 'speechSynthesis', { value: synth, configurable: true });
+      vi.stubGlobal(
+        'SpeechSynthesisUtterance',
+        class {
+          lang = '';
+          onend: (() => void) | null = null;
+          onerror: (() => void) | null = null;
+          constructor(readonly text: string) {}
+        },
+      );
+      return { synth, spoken };
+    }
+
+    async function openFinishedSummary() {
+      fetchMock.mockResolvedValue(sseResponse([skeletonEvent, { type: 'complete', source: 'ai', summary: finalSummary }]));
+      renderWithProviders(<SummaryView />);
+      await userEvent.click(await screen.findByRole('button', { name: /read aloud/i }));
+    }
+
     afterEach(() => {
       // @ts-expect-error test cleanup of a browser API
       delete window.speechSynthesis;
     });
 
     it('reads the spoken script aloud in the chosen language when the browser can speak', async () => {
-      const speak = vi.fn();
-      Object.defineProperty(window, 'speechSynthesis', {
-        value: { speak, cancel: vi.fn(), speaking: false },
-        configurable: true,
-      });
-      vi.stubGlobal(
-        'SpeechSynthesisUtterance',
-        class {
-          lang = '';
-          constructor(readonly text: string) {}
-        },
-      );
-      fetchMock.mockResolvedValue(sseResponse([skeletonEvent, { type: 'complete', source: 'ai', summary: finalSummary }]));
+      const { synth } = fakeSpeech();
 
-      renderWithProviders(<SummaryView />);
-      await userEvent.click(await screen.findByRole('button', { name: /read aloud/i }));
+      await openFinishedSummary();
 
-      expect(speak).toHaveBeenCalledWith(expect.objectContaining({ text: finalSummary.spokenScript, lang: 'en-IN' }));
+      expect(synth.speak).toHaveBeenCalledWith(expect.objectContaining({ text: finalSummary.spokenScript, lang: 'en-IN' }));
+    });
+
+    it('can pause and resume while reading', async () => {
+      const { synth } = fakeSpeech();
+      await openFinishedSummary();
+
+      expect(screen.queryByRole('button', { name: /read aloud/i })).not.toBeInTheDocument();
+      await userEvent.click(screen.getByRole('button', { name: /pause/i }));
+      expect(synth.pause).toHaveBeenCalled();
+
+      await userEvent.click(screen.getByRole('button', { name: /resume/i }));
+      expect(synth.resume).toHaveBeenCalled();
+      expect(screen.getByRole('button', { name: /pause/i })).toBeInTheDocument();
+    });
+
+    it('can stop reading, and offers Read aloud again', async () => {
+      const { synth } = fakeSpeech();
+      await openFinishedSummary();
+
+      await userEvent.click(screen.getByRole('button', { name: /pause/i }));
+      await userEvent.click(screen.getByRole('button', { name: /stop/i }));
+
+      expect(synth.cancel).toHaveBeenCalled();
+      expect(screen.getByRole('button', { name: /read aloud/i })).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /resume/i })).not.toBeInTheDocument();
+    });
+
+    it('goes back to Read aloud when the reading finishes on its own', async () => {
+      const { spoken } = fakeSpeech();
+      await openFinishedSummary();
+
+      act(() => spoken[0]!.onend?.());
+
+      expect(screen.getByRole('button', { name: /read aloud/i })).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /pause/i })).not.toBeInTheDocument();
+    });
+
+    it('stops reading when the summary is regenerated', async () => {
+      const { synth } = fakeSpeech();
+      await openFinishedSummary();
+      synth.cancel.mockClear();
+
+      await userEvent.click(screen.getByRole('button', { name: /regenerate/i }));
+
+      expect(synth.cancel).toHaveBeenCalled();
     });
 
     it('hides the button when the browser cannot speak', async () => {
