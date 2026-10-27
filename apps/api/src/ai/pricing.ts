@@ -4,6 +4,7 @@ export interface PricePerMTok {
   output: number;
 }
 
-export function costUsd(_price: PricePerMTok, _inputTokens: number, _outputTokens: number): number {
-  throw new Error('Not implemented');
+/** Cost of one call at the configured price (0 on the free tier). */
+export function costUsd(price: PricePerMTok, inputTokens: number, outputTokens: number): number {
+  return (inputTokens * price.input + outputTokens * price.output) / 1_000_000;
 }

@@ -6,9 +6,10 @@
  *  1. Text arrives piece by piece (first piece before the reply is finished).
  *  2. Function-call arguments: Gemini sends them WHOLE, not in pieces, so the
  *     Summary streams JSON as text (JSON mode) rather than as a tool call.
- *  3. An AbortSignal cancels the HTTP call. LangChain then ENDS THE STREAM
- *     QUIETLY instead of throwing, which is why guardedStream races every step
- *     against its own abort signal instead of waiting for an error.
+ *  3. An AbortSignal cancels the HTTP call. LangChain then either ends the
+ *     stream quietly or throws an error (plain Error("Aborted"), or "Error
+ *     reading from the stream") that is not marked as an abort. That is why guardedStream races every step
+ *     against its own abort signal and takes the reason from it, not the error.
  *  4. Token usage is reported (for cost logging).
  *  5. With maxRetries: 0, HTTP errors surface once with their status, and a
  *     network failure surfaces as a GoogleGenerativeAIError without a status.
@@ -65,8 +66,11 @@ describe('LangChain ChatGoogleGenerativeAI behaviour we rely on', () => {
 
     expect(Date.now() - started).toBeLessThan(1000);
     expect(fake.calls[0]!.signal?.aborted).toBe(true); // the HTTP request itself was cancelled
-    // Either outcome is possible across versions; we must not depend on an error being thrown.
-    expect(error === undefined || (error as Error).name.includes('Abort')).toBe(true);
+    // Today it throws a plain Error("Aborted") (name "Error", not "AbortError"); in other
+    // paths it ends quietly or throws "Error reading from the stream". None of these
+    // reliably say "abort", so the reason must come from our own signal, not the error.
+    expect(error === undefined || error instanceof Error).toBe(true);
+    expect((error as Error | undefined)?.name).not.toBe('AbortError');
   });
 
   it('3b. an AbortSignal stops a reply partway, keeping what arrived', async () => {

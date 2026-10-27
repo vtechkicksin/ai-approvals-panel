@@ -1,4 +1,4 @@
-
+import { z } from 'zod';
 import type { PricePerMTok } from './pricing';
 
 export interface AiConfig {
@@ -14,6 +14,30 @@ export interface AiConfig {
   pricePerMTok: PricePerMTok;
 }
 
-export function loadAiConfig(_env: NodeJS.ProcessEnv = process.env): AiConfig {
-  throw new Error('Not implemented');
+const ms = z.coerce.number().int().positive();
+const price = z.coerce.number().nonnegative();
+
+const envSchema = z.object({
+  AI_MODEL: z.string().min(1).default('gemini-2.5-flash'),
+  AI_FIRST_TOKEN_TIMEOUT_MS: ms.default(8000),
+  AI_IDLE_TIMEOUT_MS: ms.default(5000),
+  AI_MIN_RETRY_WINDOW_MS: ms.default(1500),
+  AI_MAX_TOKENS: ms.default(1024),
+  AI_PRICE_INPUT_PER_MTOK: price.default(0),
+  AI_PRICE_OUTPUT_PER_MTOK: price.default(0),
+});
+
+/** Reads AI settings from the environment. A bad value fails at startup with its name. */
+export function loadAiConfig(env: NodeJS.ProcessEnv = process.env): AiConfig {
+  const parsed = envSchema.safeParse(env);
+  if (!parsed.success) throw new Error(`Invalid AI settings:\n${z.prettifyError(parsed.error)}`);
+  const e = parsed.data;
+  return {
+    model: e.AI_MODEL,
+    firstTokenTimeoutMs: e.AI_FIRST_TOKEN_TIMEOUT_MS,
+    idleTimeoutMs: e.AI_IDLE_TIMEOUT_MS,
+    minRetryWindowMs: e.AI_MIN_RETRY_WINDOW_MS,
+    maxTokens: e.AI_MAX_TOKENS,
+    pricePerMTok: { input: e.AI_PRICE_INPUT_PER_MTOK, output: e.AI_PRICE_OUTPUT_PER_MTOK },
+  };
 }

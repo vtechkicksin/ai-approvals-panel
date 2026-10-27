@@ -1,6 +1,6 @@
 import { AiNotConfiguredError } from '../../../src/ai/errors';
 import { createChatModel } from '../../../src/ai/chatModel';
-import { textReply } from '../../helpers/fakeGemini';
+import { hang, textPieces, textReply } from '../../helpers/fakeGemini';
 import { fakeModel, testAiConfig } from '../../helpers/aiTestKit';
 
 async function drain(stream: AsyncIterable<unknown>) {
@@ -50,5 +50,26 @@ describe('createChatModel (Gemini)', () => {
 
     await expect((async () => drain(await model.stream('Hello')))()).rejects.toMatchObject({ status: 503 });
     expect(fake.calls).toHaveLength(1);
+  });
+
+  it('leaves no unhandled promise rejection when a stream is cancelled (it would crash Node)', async () => {
+    const unhandled: unknown[] = [];
+    const onUnhandled = (reason: unknown) => unhandled.push(reason);
+    process.on('unhandledRejection', onUnhandled);
+    try {
+      const { model } = fakeModel({ kind: 'stream', steps: [...textPieces(['Partial']), hang()] });
+      const controller = new AbortController();
+
+      const stream = await model.stream('Hello', { signal: controller.signal });
+      const iterator = stream[Symbol.asyncIterator]();
+      await iterator.next(); // first piece arrived
+      controller.abort(); // user closed the panel
+      await iterator.return?.().catch(() => {});
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      expect(unhandled).toEqual([]);
+    } finally {
+      process.off('unhandledRejection', onUnhandled);
+    }
   });
 });
