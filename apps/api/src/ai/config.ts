@@ -18,7 +18,9 @@ const ms = z.coerce.number().int().positive();
 const price = z.coerce.number().nonnegative();
 
 const envSchema = z.object({
-  AI_MODEL: z.string().min(1).default('gemini-2.5-flash'),
+  // gemini-2.5-flash's free tier allows only 20 requests a day; 3.1 Flash-Lite has its own quota
+  // and measured faster (first word ~0.7-1.6s in English).
+  AI_MODEL: z.string().min(1).default('gemini-3.1-flash-lite'),
   AI_FIRST_TOKEN_TIMEOUT_MS: ms.default(8000),
   AI_IDLE_TIMEOUT_MS: ms.default(5000),
   AI_MIN_RETRY_WINDOW_MS: ms.default(1500),

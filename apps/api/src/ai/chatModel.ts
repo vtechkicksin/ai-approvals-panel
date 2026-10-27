@@ -19,7 +19,7 @@ export function createChatModel({ apiKey, config }: ChatModelOptions): ChatGoogl
     apiKey,
     maxOutputTokens: config.maxTokens,
     // Short operator answers: skip thinking so the first word arrives fast
-    // (measured ~1.4s on gemini-2.5-flash, vs. hundreds of thinking tokens first).
+    // (with thinking on, gemini-2.5-flash spent ~490 tokens thinking before saying "Hello").
     thinkingConfig: { thinkingBudget: 0 },
     // Our guardedStream owns retries, so it can keep them inside the first-word budget.
     maxRetries: 0,
