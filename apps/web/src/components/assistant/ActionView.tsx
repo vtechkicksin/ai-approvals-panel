@@ -1,11 +1,11 @@
 import { useEffect, useRef } from 'react';
 import { usePanelStore, type ActionId } from '../../state/panelStore';
 import { BackIcon } from '../icons';
-import { ActionArt } from './ActionArt';
 import { ACTIONS } from './actions';
 import { SummaryView } from './SummaryView';
 import { TalkView } from './TalkView';
 import { HelpView } from './HelpView';
+import { TeachView } from './TeachView';
 
 export function ActionView({ action }: { action: ActionId }) {
   const back = usePanelStore((s) => s.back);
@@ -32,11 +32,7 @@ export function ActionView({ action }: { action: ActionId }) {
       ) : action === 'help' ? (
         <HelpView />
       ) : (
-        <div className="action-view__body">
-          <ActionArt action={action} />
-          <p className="action-view__blurb">{info.blurb}</p>
-          <p className="muted">Coming next: this action will be connected to the AI.</p>
-        </div>
+        <TeachView />
       )}
     </div>
   );

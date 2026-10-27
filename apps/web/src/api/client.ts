@@ -1,5 +1,11 @@
 import type { z } from 'zod';
-import { apiErrorSchema, approvalsResponseSchema, type ApprovalsResponse, type TeachGuide } from '@approvals/schemas';
+import {
+  apiErrorSchema,
+  approvalsResponseSchema,
+  teachGuideSchema,
+  type ApprovalsResponse,
+  type TeachGuide,
+} from '@approvals/schemas';
 
 export const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:4000';
 
@@ -58,6 +64,6 @@ export function fetchApprovals(signal?: AbortSignal): Promise<ApprovalsResponse>
   return requestJson('/api/approvals', approvalsResponseSchema, { signal });
 }
 
-export function fetchTeachGuide(_signal?: AbortSignal): Promise<TeachGuide> {
-  throw new Error('Not implemented');
+export function fetchTeachGuide(signal?: AbortSignal): Promise<TeachGuide> {
+  return requestJson('/api/teach/guide', teachGuideSchema, { signal });
 }

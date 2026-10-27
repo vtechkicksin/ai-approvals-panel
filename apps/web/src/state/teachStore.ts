@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { createChatStore } from './chatStore';
 
 interface TeachData {
   /** 1-based step number; stepCount + 1 means the guide is finished. */
@@ -13,30 +14,16 @@ interface TeachActions {
 
 export const initialTeachData: TeachData = { step: 1 };
 
-export const useTeachStore = create<TeachData & TeachActions>()(() => ({
+export const useTeachStore = create<TeachData & TeachActions>()((set) => ({
   ...initialTeachData,
-  next: () => {},
-  previous: () => {},
-  restart: () => {},
+  next: (stepCount) => set((s) => ({ step: Math.min(s.step + 1, stepCount + 1) })),
+  previous: () => set((s) => ({ step: Math.max(1, s.step - 1) })),
+  restart: () => set({ step: 1 }),
 }));
 
-/** Follow-up questions per step (placeholder until the shared chat store exists). */
-export const useTeachChatStore = create<{
-  entries: unknown[];
-  isSending: boolean;
-  send: () => Promise<void>;
-  retry: () => Promise<void>;
-  cancel: () => void;
-  clear: () => void;
-}>()(() => ({
-  entries: [],
-  isSending: false,
-  send: async () => {
-    throw new Error('Not implemented');
-  },
-  retry: async () => {
-    throw new Error('Not implemented');
-  },
-  cancel: () => {},
-  clear: () => {},
-}));
+/** Follow-up questions: one thread per step, and each request carries its step. */
+export const useTeachChatStore = createChatStore({
+  path: '/api/ai/teach',
+  scope: () => useTeachStore.getState().step,
+  body: (step) => ({ step }),
+});

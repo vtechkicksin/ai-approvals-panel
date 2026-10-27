@@ -484,19 +484,7 @@ button {
   font-size: 16px;
 }
 
-.action-view__body {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  padding: 32px 24px;
-  text-align: center;
-}
 
-.action-view__blurb {
-  margin: 12px 0 0;
-  font-weight: 500;
-}
 
 .panel-footer {
   display: flex;
@@ -680,11 +668,11 @@ button {
   min-height: 0;
 }
 
-.panel-body:has(.talk) {
+.panel-body:has(.talk, .teach) {
   overflow: hidden;
 }
 
-.panel-body:has(.talk) .action-view {
+.panel-body:has(.talk, .teach) .action-view {
   height: 100%;
 }
 
@@ -913,6 +901,90 @@ button {
 .help-sources details p {
   margin: 4px 0 0;
   color: var(--text-muted);
+}
+
+/* ---------- Teach view ---------- */
+
+.teach {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.teach-step {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 14px 16px 0;
+  padding: 14px;
+  border: 1px solid #e4d8fd;
+  border-radius: 12px;
+  background: #faf7ff;
+}
+
+.teach-step__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.teach-step__count {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.teach-progress {
+  display: flex;
+  gap: 4px;
+}
+
+.teach-progress span {
+  width: 18px;
+  height: 4px;
+  border-radius: 2px;
+  background: #e4d8fd;
+}
+
+.teach-progress span.is-done {
+  background: var(--accent);
+}
+
+.teach-step__text {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.teach-step__nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.teach-thread {
+  flex: 1;
+}
+
+.teach-done {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 24px 16px;
+}
+
+.teach-done p {
+  margin: 0;
+}
+
+.teach-done__title {
+  font-size: 16px;
+  font-weight: 600;
 }
 
 /* Wide screens: keep the table clear of the open panel, as in the reference layout. */
