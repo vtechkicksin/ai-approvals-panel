@@ -13,6 +13,7 @@ import { summaryRouter } from './summary/summaryRouter';
 import { talkRouter } from './talk/talkRouter';
 import { helpRouter } from './help/helpRouter';
 import { splitPolicy, type PolicyChunk } from './help/policyChunks';
+import { teachGuideRouter, teachRouter } from './teach/teachRouter';
 
 export interface AiDeps {
   config: AiConfig;
@@ -63,6 +64,8 @@ export function createApp(deps: AppDeps = defaultDeps()): Express {
   app.use('/api/ai/summary', summaryRouter(deps));
   app.use('/api/ai/talk', talkRouter(deps));
   app.use('/api/ai/help', helpRouter(deps));
+  app.use('/api/teach/guide', teachGuideRouter(deps));
+  app.use('/api/ai/teach', teachRouter(deps));
 
   app.use(notFound);
   app.use(errorHandler);

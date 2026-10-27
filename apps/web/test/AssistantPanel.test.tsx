@@ -122,4 +122,15 @@ describe('AssistantPanel', () => {
 
     expect(within(panel()).getByRole('textbox', { name: /question/i })).toBeInTheDocument();
   });
+
+  it('opening Teach me shows the guide', async () => {
+    renderWithProviders(<AssistantPanel />);
+
+    await userEvent.click(within(panel()).getByRole('button', { name: 'Teach me' }));
+
+    expect(within(panel()).getByRole('heading', { name: 'Teach me' })).toBeInTheDocument();
+    await waitFor(() =>
+      expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining('/api/teach/guide'), expect.anything()),
+    );
+  });
 });
