@@ -1,3 +1,4 @@
+import { APIConnectionError } from '@anthropic-ai/sdk';
 import { AiNotConfiguredError, classifyAiError, isRetryable } from '../../../src/ai/errors';
 
 const httpError = (status: number) => Object.assign(new Error(`HTTP ${status}`), { status });
@@ -24,9 +25,8 @@ describe('classifyAiError', () => {
 
   it('treats network failures as unavailable', () => {
     expect(classifyAiError(new TypeError('fetch failed'))).toBe('unavailable');
-    expect(classifyAiError(Object.assign(new Error('Connection error.'), { name: 'APIConnectionError' }))).toBe(
-      'unavailable',
-    );
+    // What the SDK really throws: its `name` is just "Error", so match the class, not the name.
+    expect(classifyAiError(new APIConnectionError({ message: 'Connection error.' }))).toBe('unavailable');
   });
 
   it('treats an abort as cancelled', () => {

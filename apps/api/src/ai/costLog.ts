@@ -22,10 +22,15 @@ export interface CostLogger {
 
 /** Structured JSON lines on stdout, ready for any log shipper. */
 export function createConsoleCostLogger(): CostLogger {
-  throw new Error('Not implemented');
+  return {
+    log(record) {
+      console.log(JSON.stringify({ event: 'ai_call', at: new Date().toISOString(), ...record }));
+    },
+  };
 }
 
 /** Keeps records in memory; used by tests. */
 export function createMemoryCostLogger(): CostLogger & { records: AiCallRecord[] } {
-  throw new Error('Not implemented');
+  const records: AiCallRecord[] = [];
+  return { records, log: (record) => void records.push(record) };
 }
