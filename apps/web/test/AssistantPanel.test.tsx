@@ -114,4 +114,12 @@ describe('AssistantPanel', () => {
 
     expect(within(panel()).getByRole('textbox', { name: /message/i })).toBeInTheDocument();
   });
+
+  it('opening Help me shows the question box', async () => {
+    renderWithProviders(<AssistantPanel />);
+
+    await userEvent.click(within(panel()).getByRole('button', { name: 'Help me' }));
+
+    expect(within(panel()).getByRole('textbox', { name: /question/i })).toBeInTheDocument();
+  });
 });

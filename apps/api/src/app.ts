@@ -2,7 +2,7 @@ import cors from 'cors';
 import express, { type Express } from 'express';
 import { healthResponseSchema, type ApprovalItem, type HealthResponse } from '@approvals/schemas';
 import { approvalsRouter } from './approvals/approvalsRouter';
-import { loadApprovals, loadPriorityTable } from './data/seedData';
+import { loadApprovals, loadPolicyMarkdown, loadPriorityTable } from './data/seedData';
 import { errorHandler, notFound } from './middleware/errors';
 import type { PriorityTable } from './policy/priorityTable';
 import type { ChatGoogleGenerativeAI } from '@langchain/google-genai';
@@ -11,6 +11,8 @@ import { loadAiConfig, type AiConfig } from './ai/config';
 import { createConsoleCostLogger, type CostLogger } from './ai/costLog';
 import { summaryRouter } from './summary/summaryRouter';
 import { talkRouter } from './talk/talkRouter';
+import { helpRouter } from './help/helpRouter';
+import { splitPolicy, type PolicyChunk } from './help/policyChunks';
 
 export interface AiDeps {
   config: AiConfig;
@@ -25,6 +27,8 @@ export interface AppDeps {
   /** The web app's origin, allowed to call the API from the browser. */
   webOrigin: string;
   ai: AiDeps;
+  /** The policy doc split into sections, for Help me. */
+  policyChunks: PolicyChunk[];
 }
 
 /** Loads the seed data once; invalid data or policy fails here, at startup. */
@@ -35,6 +39,7 @@ export function defaultDeps(): AppDeps {
     priorityTable: loadPriorityTable(),
     webOrigin: process.env.WEB_ORIGIN ?? 'http://localhost:5173',
     ai: defaultAiDeps(),
+    policyChunks: splitPolicy(loadPolicyMarkdown()),
   };
 }
 
@@ -57,6 +62,7 @@ export function createApp(deps: AppDeps = defaultDeps()): Express {
   app.use('/api/approvals', approvalsRouter(deps));
   app.use('/api/ai/summary', summaryRouter(deps));
   app.use('/api/ai/talk', talkRouter(deps));
+  app.use('/api/ai/help', helpRouter(deps));
 
   app.use(notFound);
   app.use(errorHandler);
