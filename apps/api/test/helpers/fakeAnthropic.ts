@@ -13,7 +13,9 @@ export type SseStep =
 
 export type FakeReply =
   | { kind: 'stream'; steps: SseStep[] }
-  | { kind: 'error'; status: number; body?: Record<string, unknown> };
+  | { kind: 'error'; status: number; body?: Record<string, unknown>; delayMs?: number }
+  /** The connection fails, as when the network is down. */
+  | { kind: 'network'; delayMs?: number };
 
 export interface FakeAnthropic {
   fetch: typeof fetch;
@@ -58,7 +60,13 @@ export function createFakeAnthropic(...replies: FakeReply[]): FakeAnthropic {
     const reply = replies[Math.min(calls.length - 1, replies.length - 1)];
     if (!reply) throw new Error('createFakeAnthropic: no reply scripted');
 
+    if (reply.kind === 'network') {
+      if (reply.delayMs) await sleep(reply.delayMs, signal);
+      throw new TypeError('fetch failed');
+    }
+
     if (reply.kind === 'error') {
+      if (reply.delayMs) await sleep(reply.delayMs, signal);
       return new Response(
         JSON.stringify(reply.body ?? { type: 'error', error: { type: 'api_error', message: 'fake error' } }),
         { status: reply.status, headers: { 'content-type': 'application/json' } },
