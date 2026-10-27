@@ -4,7 +4,7 @@ An approvals assistant for an operations dashboard, rebuilt from the Crystal Bal
 
 | Action | What it does |
 |---|---|
-| **Present me Summary** | Prioritised summary of the pending queue. Rule-ranked cards appear instantly, then AI text streams in, validated field by field. |
+| **Present me Summary** | Prioritised summary of the pending queue. Rule-ranked cards appear instantly, then AI text streams in, validated field by field. Can be read aloud, with pause, resume and stop. |
 | **Talk to me** | Multi-turn chat about the queue, streamed token by token. |
 | **Help me** | Answers from the approval policy (BM25 retrieval + grounded answer), with sources. |
 | **Teach me** | A 5-step review guide taken from the policy, with AI answers to follow-up questions. |
@@ -152,7 +152,7 @@ Every AI call writes one JSON line to stdout: feature, model, outcome, failure r
 | Layer | Tool | Count | Highlights |
 |---|---|---|---|
 | Unit + integration (API) | Jest + Supertest | 285 | Every AI endpoint: success, Gemini down, first-word timeout, cut short, broken / wrong-shape / reordered AI output, missing key, bad input, rate limits. The real LangChain + Google SDK run against a fake HTTP layer. |
-| Unit + component (web) | Vitest + Testing Library | 98 | Loading, streaming and error states of every view; the please-wait message; malformed events never rendered; abort on close. |
+| Unit + component (web) | Vitest + Testing Library | 102 | Loading, streaming and error states of every view; the please-wait message; malformed events never rendered; abort on close. |
 | End-to-end | Playwright | 18 | All five actions in Chromium against a scripted fake Gemini, including failure paths and the rate limit. |
 
 Learning tests ([apps/api/test/learning](apps/api/test/learning)) record how LangChain's Gemini client really behaves (streaming, abort, usage, errors) before the design relies on it.

@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import type { AnswerSource } from '@approvals/schemas';
 import { PRIORITY_LABELS } from '../../lib/format';
@@ -14,10 +14,15 @@ const SOURCE_LABELS: Record<AnswerSource, string> = {
 
 const canSpeak = () => typeof window !== 'undefined' && 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window;
 
+type Speech = 'idle' | 'speaking' | 'paused';
+
 export function SummaryView() {
   const language = usePanelStore((s) => s.language);
   const { status, cards, headline, reasons, confirmed, spokenScript, notice, source, errorMessage, start, cancel } =
     useSummaryStore(useShallow((s) => s));
+  const [speech, setSpeech] = useState<Speech>('idle');
+  /** The utterance being read; events from an older, cancelled one are ignored. */
+  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
 
   useEffect(() => {
     // Start on the next tick: React StrictMode mounts, unmounts and mounts again in
@@ -59,7 +64,31 @@ export function SummaryView() {
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(spokenScript);
     utterance.lang = language === 'hi' ? 'hi-IN' : 'en-IN';
+    const finished = () => {
+      if (utteranceRef.current === utterance) setSpeech('idle');
+    };
+    utterance.onend = finished;
+    utterance.onerror = finished;
+    utteranceRef.current = utterance;
     window.speechSynthesis.speak(utterance);
+    setSpeech('speaking');
+  };
+  const pauseReading = () => {
+    window.speechSynthesis.pause();
+    setSpeech('paused');
+  };
+  const resumeReading = () => {
+    window.speechSynthesis.resume();
+    setSpeech('speaking');
+  };
+  const stopReading = () => {
+    utteranceRef.current = null;
+    if (canSpeak()) window.speechSynthesis.cancel();
+    setSpeech('idle');
+  };
+  const regenerate = () => {
+    stopReading();
+    void start(language);
   };
 
   return (
@@ -101,12 +130,30 @@ export function SummaryView() {
       <footer className="summary-footer">
         <span className="muted">{source ? SOURCE_LABELS[source] : 'Writing…'}</span>
         <span className="summary-footer__actions">
-          {canSpeak() && status === 'complete' && spokenScript && (
-            <button type="button" className="link-button" onClick={readAloud}>
-              🔊 Read aloud
-            </button>
-          )}
-          <button type="button" className="link-button" disabled={isStreaming} onClick={() => void start(language)}>
+          {canSpeak() &&
+            status === 'complete' &&
+            spokenScript &&
+            (speech === 'idle' ? (
+              <button type="button" className="link-button" onClick={readAloud}>
+                🔊 Read aloud
+              </button>
+            ) : (
+              <>
+                {speech === 'speaking' ? (
+                  <button type="button" className="link-button" onClick={pauseReading}>
+                    ⏸ Pause
+                  </button>
+                ) : (
+                  <button type="button" className="link-button" onClick={resumeReading}>
+                    ▶ Resume
+                  </button>
+                )}
+                <button type="button" className="link-button" onClick={stopReading}>
+                  ⏹ Stop
+                </button>
+              </>
+            ))}
+          <button type="button" className="link-button" disabled={isStreaming} onClick={regenerate}>
             Regenerate
           </button>
         </span>
