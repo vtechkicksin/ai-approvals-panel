@@ -7,7 +7,7 @@ import { createMemoryCostLogger } from '../../src/ai/costLog';
 import { AiNotConfiguredError } from '../../src/ai/errors';
 import { guardedStream } from '../../src/ai/guardedStream';
 import { streamTextAnswer } from '../../src/ai/sse';
-import { hang, messageStart, textReply, type FakeReply } from '../helpers/fakeAnthropic';
+import { emptyChunk, hang, textPieces, textReply, type FakeReply } from '../helpers/fakeGemini';
 import { fakeModel, testAiConfig } from '../helpers/aiTestKit';
 import { collectText, parseSse } from '../helpers/sse';
 
@@ -63,7 +63,7 @@ describe('streamTextAnswer (SSE)', () => {
   });
 
   it('serves the backup answer when the AI service is down (never a 500)', async () => {
-    const { app } = appWith({ replies: [{ kind: 'error', status: 529 }] });
+    const { app } = appWith({ replies: [{ kind: 'error', status: 503 }] });
 
     const { res, events } = await getEvents(app);
 
@@ -76,7 +76,7 @@ describe('streamTextAnswer (SSE)', () => {
   });
 
   it('serves the backup answer with an "AI is slow" note after the first-word timeout', async () => {
-    const { app } = appWith({ replies: [{ kind: 'stream', steps: [messageStart(), hang()] }] });
+    const { app } = appWith({ replies: [{ kind: 'stream', steps: [emptyChunk(), hang()] }] });
 
     const { events } = await getEvents(app);
 
@@ -97,7 +97,7 @@ describe('streamTextAnswer (SSE)', () => {
   });
 
   it('keeps the partial text and says it was cut short when the AI goes quiet', async () => {
-    const steps = [...textReply(['Start of the answer']).slice(0, 3), hang()];
+    const steps = [...textPieces(['Start of the answer']), hang()];
     const { app } = appWith({ replies: [{ kind: 'stream', steps }] });
 
     const { events } = await getEvents(app);
@@ -110,7 +110,7 @@ describe('streamTextAnswer (SSE)', () => {
   });
 
   it('writes the notices in Hindi when the operator chose Hindi', async () => {
-    const { app } = appWith({ language: 'hi', replies: [{ kind: 'error', status: 529 }] });
+    const { app } = appWith({ language: 'hi', replies: [{ kind: 'error', status: 503 }] });
 
     const { events } = await getEvents(app);
 
@@ -120,7 +120,7 @@ describe('streamTextAnswer (SSE)', () => {
   it('sends a friendly error event if even the backup answer fails', async () => {
     const consoleError = jest.spyOn(console, 'error').mockImplementation(() => {});
     const { app } = appWith({
-      replies: [{ kind: 'error', status: 529 }],
+      replies: [{ kind: 'error', status: 503 }],
       fallback: () => {
         throw new Error('rules engine exploded');
       },
@@ -136,7 +136,7 @@ describe('streamTextAnswer (SSE)', () => {
 
   it('stops the AI call when the browser disconnects', async () => {
     const { app, fake } = appWith({
-      replies: [{ kind: 'stream', steps: [...textReply(['First words']).slice(0, 3), hang()] }],
+      replies: [{ kind: 'stream', steps: [...textPieces(['First words']), hang()] }],
     });
     const server = app.listen(0);
     const { port } = server.address() as AddressInfo;

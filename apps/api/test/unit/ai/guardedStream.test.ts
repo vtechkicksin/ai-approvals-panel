@@ -2,7 +2,7 @@ import type { AIMessageChunk } from '@langchain/core/messages';
 import { createMemoryCostLogger } from '../../../src/ai/costLog';
 import { AiNotConfiguredError } from '../../../src/ai/errors';
 import { guardedStream, type GuardedEvent, type GuardedStreamOptions } from '../../../src/ai/guardedStream';
-import { delay, hang, messageStart, textReply, toolUseReply, type FakeReply } from '../../helpers/fakeAnthropic';
+import { delay, emptyChunk, functionCallReply, hang, textPieces, textReply, type FakeReply } from '../../helpers/fakeGemini';
 import { fakeModel, testAiConfig } from '../../helpers/aiTestKit';
 
 // testAiConfig: first word within 300ms, silence limit 150ms, retry only if ≥100ms left.
@@ -44,7 +44,7 @@ describe('guardedStream', () => {
       expect(logger.records).toHaveLength(1);
       expect(logger.records[0]).toMatchObject({
         feature: 'test',
-        model: 'claude-haiku-5-5',
+        model: 'gemini-2.5-flash',
         outcome: 'complete',
         attempts: 1,
         inputTokens: 12,
@@ -55,7 +55,7 @@ describe('guardedStream', () => {
     });
 
     it('counts streamed tool-call JSON as the first word', async () => {
-      const { events } = await run({ replies: [{ kind: 'stream', steps: toolUseReply('emit', ['{"a":', '1}']) }] });
+      const { events } = await run({ replies: [{ kind: 'stream', steps: functionCallReply('emit', { a: 1 }) }] });
 
       expect(end(events)).toEqual({ type: 'end', outcome: 'complete' });
     });
@@ -72,7 +72,7 @@ describe('guardedStream', () => {
   describe('8s first-word limit', () => {
     it('gives up when no word arrives in time, and cancels the HTTP call', async () => {
       const { events, fake, elapsed, logger } = await run({
-        replies: [{ kind: 'stream', steps: [messageStart(), hang()] }],
+        replies: [{ kind: 'stream', steps: [emptyChunk(), hang()] }],
       });
 
       expect(end(events)).toEqual({ type: 'end', outcome: 'failed', reason: 'first_token_timeout' });
@@ -82,9 +82,9 @@ describe('guardedStream', () => {
       expect(logger.records[0]).toMatchObject({ outcome: 'failed', reason: 'first_token_timeout' });
     });
 
-    it('does not count the empty "message started" event as a word', async () => {
+    it('does not count an empty chunk as a word', async () => {
       const { events } = await run({
-        replies: [{ kind: 'stream', steps: [messageStart(), delay(400), ...textReply(['late']).slice(1)] }],
+        replies: [{ kind: 'stream', steps: [emptyChunk(), delay(400), ...textReply(['late'])] }],
       });
 
       expect(end(events)).toMatchObject({ outcome: 'failed', reason: 'first_token_timeout' });
@@ -101,7 +101,7 @@ describe('guardedStream', () => {
 
   describe('5s silence rule', () => {
     it('stops a reply that goes quiet, keeping what already arrived', async () => {
-      const steps = [...textReply(['Partial answer']).slice(0, 3), hang()];
+      const steps = [...textPieces(['Partial answer']), hang()];
       const { events, elapsed } = await run({ replies: [{ kind: 'stream', steps }] });
 
       expect(texts(events)).toEqual(['Partial answer']);
@@ -113,7 +113,7 @@ describe('guardedStream', () => {
   describe('quick-failure retry', () => {
     it('retries once after a quick service error and succeeds', async () => {
       const { events, fake, logger } = await run({
-        replies: [{ kind: 'error', status: 529 }, { kind: 'stream', steps: textReply(['Recovered']) }],
+        replies: [{ kind: 'error', status: 503 }, { kind: 'stream', steps: textReply(['Recovered']) }],
       });
 
       expect(texts(events)).toEqual(['Recovered']);
@@ -133,8 +133,8 @@ describe('guardedStream', () => {
     it('retries at most once', async () => {
       const { events, fake } = await run({
         replies: [
-          { kind: 'error', status: 529 },
-          { kind: 'error', status: 529 },
+          { kind: 'error', status: 503 },
+          { kind: 'error', status: 503 },
           { kind: 'stream', steps: textReply(['Too late']) },
         ],
       });
@@ -165,7 +165,7 @@ describe('guardedStream', () => {
       const { events, fake, elapsed } = await run({
         replies: [
           { kind: 'error', status: 500, delayMs: 100 },
-          { kind: 'stream', steps: [messageStart(), hang()] },
+          { kind: 'stream', steps: [emptyChunk(), hang()] },
         ],
       });
 
@@ -182,7 +182,7 @@ describe('guardedStream', () => {
 
       const { events, fake, elapsed } = await run({
         signal: controller.signal,
-        replies: [{ kind: 'stream', steps: [messageStart(), hang()] }],
+        replies: [{ kind: 'stream', steps: [emptyChunk(), hang()] }],
       });
 
       expect(end(events)).toEqual({ type: 'end', outcome: 'failed', reason: 'cancelled' });
@@ -192,7 +192,7 @@ describe('guardedStream', () => {
 
     it('cancels the AI call partway through a reply', async () => {
       const controller = new AbortController();
-      const steps = [...textReply(['Some text']).slice(0, 3), delay(60), hang()];
+      const steps = [...textPieces(['Some text']), delay(60), hang()];
       setTimeout(() => controller.abort(), 30);
 
       const { events } = await run({ signal: controller.signal, replies: [{ kind: 'stream', steps }] });

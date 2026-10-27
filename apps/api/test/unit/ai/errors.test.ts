@@ -1,22 +1,25 @@
-import { APIConnectionError } from '@anthropic-ai/sdk';
+import {
+  GoogleGenerativeAIAbortError,
+  GoogleGenerativeAIError,
+  GoogleGenerativeAIFetchError,
+  GoogleGenerativeAIResponseError,
+} from '@google/generative-ai';
 import { AiNotConfiguredError, classifyAiError, isRetryable } from '../../../src/ai/errors';
 
-const httpError = (status: number) => Object.assign(new Error(`HTTP ${status}`), { status });
+const fetchError = (status: number) => new GoogleGenerativeAIFetchError(`HTTP ${status}`, status, 'status text');
 
-describe('classifyAiError', () => {
+describe('classifyAiError (Gemini)', () => {
   it.each([
     [401, 'auth'],
     [403, 'auth'],
     [429, 'rate_limited'],
     [400, 'bad_request'],
     [404, 'bad_request'],
-    [413, 'bad_request'],
     [500, 'unavailable'],
-    [502, 'unavailable'],
     [503, 'unavailable'],
-    [529, 'unavailable'],
+    [504, 'unavailable'],
   ])('maps HTTP %i to %s', (status, reason) => {
-    expect(classifyAiError(httpError(status))).toBe(reason);
+    expect(classifyAiError(fetchError(status))).toBe(reason);
   });
 
   it('treats a missing API key as not configured', () => {
@@ -24,12 +27,19 @@ describe('classifyAiError', () => {
   });
 
   it('treats network failures as unavailable', () => {
+    // What the Google SDK throws when fetch itself fails: no status.
+    expect(classifyAiError(new GoogleGenerativeAIError('Error fetching from ...: fetch failed'))).toBe('unavailable');
     expect(classifyAiError(new TypeError('fetch failed'))).toBe('unavailable');
-    // What the SDK really throws: its `name` is just "Error", so match the class, not the name.
-    expect(classifyAiError(new APIConnectionError({ message: 'Connection error.' }))).toBe('unavailable');
+  });
+
+  it('treats a reply blocked by Gemini (e.g. safety) as a bad request', () => {
+    expect(classifyAiError(new GoogleGenerativeAIResponseError('Candidate was blocked due to SAFETY'))).toBe(
+      'bad_request',
+    );
   });
 
   it('treats an abort as cancelled', () => {
+    expect(classifyAiError(new GoogleGenerativeAIAbortError('Request aborted'))).toBe('cancelled');
     expect(classifyAiError(Object.assign(new Error('aborted'), { name: 'AbortError' }))).toBe('cancelled');
   });
 

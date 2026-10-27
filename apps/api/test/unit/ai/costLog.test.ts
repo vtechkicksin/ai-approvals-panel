@@ -2,7 +2,7 @@ import { createConsoleCostLogger, createMemoryCostLogger, type AiCallRecord } fr
 
 const record: AiCallRecord = {
   feature: 'greeting',
-  model: 'claude-haiku-5-5',
+  model: 'gemini-2.5-flash',
   outcome: 'complete',
   attempts: 1,
   inputTokens: 120,

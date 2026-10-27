@@ -54,7 +54,7 @@ export async function* guardedStream(options: GuardedStreamOptions): AsyncGenera
       attempts,
       inputTokens,
       outputTokens,
-      costUsd: costUsd(config.model, inputTokens, outputTokens),
+      costUsd: costUsd(config.pricePerMTok, inputTokens, outputTokens),
       latencyMs: Date.now() - startedAt,
       firstTokenMs: firstTokenAt === null ? null : firstTokenAt - startedAt,
     });
