@@ -1,12 +1,8 @@
 import request from 'supertest';
 import { apiErrorSchema, approvalsResponseSchema, type ApprovalItem } from '@approvals/schemas';
-import { createApp, type AppDeps } from '../../src/app';
-import { loadApprovals, loadPriorityTable } from '../../src/data/seedData';
+import { createApp, defaultDeps, type AppDeps } from '../../src/app';
 
-function realDeps(): AppDeps {
-  const approvals = loadApprovals();
-  return { getApprovals: () => approvals, priorityTable: loadPriorityTable() };
-}
+const realDeps = (): AppDeps => defaultDeps();
 
 describe('GET /api/approvals', () => {
   it('returns the ranked queue in the shape of the shared contract', async () => {
