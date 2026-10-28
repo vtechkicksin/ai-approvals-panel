@@ -1,7 +1,7 @@
 import { SystemMessage } from '@langchain/core/messages';
 import type { RequestHandler } from 'express';
 import { talkRequestSchema } from '@approvals/schemas';
-import type { AppDeps } from '../../types/dependencies';
+import type { AiDeps, ApprovalQueueDependencies } from '../../types/dependencies';
 import { guardedStream } from '../../ai/guardedStream';
 import { message } from '../../ai/messages';
 import { streamTextAnswer } from '../../ai/sse';
@@ -10,8 +10,10 @@ import { errorBody } from '../../middleware/errors';
 import { talkPrompt } from '../../prompts';
 import { toModelMessages } from './history';
 
+export type TalkDependencies = ApprovalQueueDependencies & { ai: AiDeps };
+
 /** POST /api/ai/talk: streams a chat reply about the approvals queue as SSE. */
-export function talkController(deps: AppDeps): RequestHandler {
+export function talkController(deps: TalkDependencies): RequestHandler {
   return async (req, res) => {
     const request = talkRequestSchema.safeParse(req.body);
     if (!request.success) {

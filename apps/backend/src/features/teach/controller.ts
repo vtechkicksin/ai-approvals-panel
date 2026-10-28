@@ -1,7 +1,7 @@
 import { SystemMessage } from '@langchain/core/messages';
 import type { RequestHandler } from 'express';
 import { teachGuideSchema, teachRequestSchema } from '@approvals/schemas';
-import type { AppDeps } from '../../types/dependencies';
+import type { AiDeps, ApprovalQueueDependencies } from '../../types/dependencies';
 import { guardedStream } from '../../ai/guardedStream';
 import { streamTextAnswer } from '../../ai/sse';
 import { rankApprovals } from '../approvals/rankApprovals';
@@ -12,9 +12,19 @@ import { teachPrompt } from '../../prompts';
 import { toModelMessages } from '../talk/history';
 import { buildGuide } from './guide';
 import { buildTeachFallback } from './teachText';
+import type { PolicyChunk } from '../../policy/policyChunks';
+
+export interface TeachGuideDependencies {
+  policyChunks: PolicyChunk[];
+}
+
+export type TeachDependencies = ApprovalQueueDependencies & {
+  ai: AiDeps;
+  policyChunks: PolicyChunk[];
+};
 
 /** GET /api/teach/guide: the fixed guide (no AI). */
-export function teachGuideController(deps: AppDeps): RequestHandler {
+export function teachGuideController(deps: TeachGuideDependencies): RequestHandler {
   const guide = teachGuideSchema.parse(buildGuide(deps.policyChunks));
   return (_req, res) => {
     res.json(guide);
@@ -22,7 +32,7 @@ export function teachGuideController(deps: AppDeps): RequestHandler {
 }
 
 /** POST /api/ai/teach: streams an answer to a follow-up question about one step. */
-export function teachController(deps: AppDeps): RequestHandler {
+export function teachController(deps: TeachDependencies): RequestHandler {
   const guide = buildGuide(deps.policyChunks);
   const retriever = new PolicyRetriever({ chunks: deps.policyChunks });
 

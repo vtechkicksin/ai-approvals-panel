@@ -11,13 +11,17 @@ import { teachGuideRouter, teachRouter } from '../features/teach/router';
 /** Registers the API's feature routers and their public URL prefixes. */
 export function apiRouter(deps: AppDeps): Router {
   const router = Router();
+  const queue = { getApprovals: deps.getApprovals, priorityTable: deps.priorityTable };
+  const queueWithAi = { ...queue, ai: deps.ai };
+  const policyWithAi = { ai: deps.ai, policyChunks: deps.policyChunks };
+
   router.use('/api/health', healthRouter());
-  router.use('/api/approvals', approvalsRouter(deps));
-  router.use('/api/ai/summary', summaryRouter(deps));
-  router.use('/api/ai/talk', talkRouter(deps));
-  router.use('/api/ai/help', helpRouter(deps));
-  router.use('/api/teach/guide', teachGuideRouter(deps));
-  router.use('/api/ai/teach', teachRouter(deps));
-  router.use('/api/ai/greeting', greetingRouter(deps));
+  router.use('/api/approvals', approvalsRouter(queue));
+  router.use('/api/ai/summary', summaryRouter(queueWithAi));
+  router.use('/api/ai/talk', talkRouter(queueWithAi));
+  router.use('/api/ai/help', helpRouter(policyWithAi));
+  router.use('/api/teach/guide', teachGuideRouter({ policyChunks: deps.policyChunks }));
+  router.use('/api/ai/teach', teachRouter({ ...queue, ...policyWithAi }));
+  router.use('/api/ai/greeting', greetingRouter(queueWithAi));
   return router;
 }

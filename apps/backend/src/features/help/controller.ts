@@ -7,7 +7,7 @@ import {
   type HelpStreamEvent,
   type PolicyCitation,
 } from '@approvals/schemas';
-import type { AppDeps } from '../../types/dependencies';
+import type { AiDeps } from '../../types/dependencies';
 import { guardedStream } from '../../ai/guardedStream';
 import { openSse, streamTextAnswer } from '../../ai/sse';
 import { errorBody } from '../../middleware/errors';
@@ -17,6 +17,11 @@ import { buildHelpFallback, notCoveredText } from './helpText';
 import type { PolicyChunk } from '../../policy/policyChunks';
 import { PolicyRetriever } from '../../policy/policyRetriever';
 
+export interface HelpDependencies {
+  ai: AiDeps;
+  policyChunks: PolicyChunk[];
+}
+
 function toCitation(chunk: PolicyChunk): PolicyCitation {
   const flat = chunk.text.replace(/\s+/g, ' ');
   const excerpt = flat.length <= HELP_LIMITS.excerpt ? flat : `${flat.slice(0, HELP_LIMITS.excerpt - 1).trimEnd()}…`;
@@ -24,7 +29,7 @@ function toCitation(chunk: PolicyChunk): PolicyCitation {
 }
 
 /** POST /api/ai/help: answers a question from the policy, with citations, as SSE. */
-export function helpController(deps: AppDeps): RequestHandler {
+export function helpController(deps: HelpDependencies): RequestHandler {
   const retriever = new PolicyRetriever({ chunks: deps.policyChunks });
   return async (req, res) => {
     const request = helpRequestSchema.safeParse(req.body);

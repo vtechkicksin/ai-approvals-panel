@@ -30,10 +30,10 @@ Requirements: Node.js 22 or newer, npm 10 or newer.
 
 ```bash
 npm install
-cp apps/api/.env.example apps/api/.env
+cp apps/backend/.env.example apps/backend/.env
 ```
 
-Put a Google AI Studio key in `apps/api/.env` as `GOOGLE_API_KEY=…` ([get one](https://aistudio.google.com/apikey)). **The app also runs without a key**: every action then serves its rule-based answer with an "AI unavailable" note, which is a quick way to see the fallbacks.
+Put a Google AI Studio key in `apps/backend/.env` as `GOOGLE_API_KEY=…` ([get one](https://aistudio.google.com/apikey)). **The app also runs without a key**: every action then serves its rule-based answer with an "AI unavailable" note, which is a quick way to see the fallbacks.
 
 ```bash
 npm run dev
@@ -52,7 +52,7 @@ npm run test:e2e                       # Playwright: real browser, real API, fak
 
 The end-to-end suite starts its own web app, API and fake Gemini server on ports 5174, 4100 and 4900, so it does not clash with `npm run dev`. It never calls Google and never uses your key.
 
-### Configuration (`apps/api/.env`)
+### Configuration (`apps/backend/.env`)
 
 | Variable | Default | Purpose |
 |---|---|---|
@@ -76,7 +76,7 @@ Invalid values stop the API at startup with the variable's name, rather than mis
 
 ```mermaid
 flowchart LR
-  subgraph Web["apps/web · React + Vite"]
+  subgraph Web["apps/frontend · React + Vite"]
     UI[Panel views] --> Stores[Zustand stores]
     Stores --> SSE[streamSse: POST + SSE reader<br/>validates every event with Zod]
     UI --> RQ[React Query: approvals, guide]
@@ -84,7 +84,7 @@ flowchart LR
   subgraph Shared["packages/schemas · Zod contract"]
     Contract[requests · responses · stream events<br/>+ shared greeting template]
   end
-  subgraph API["apps/api · Express 5"]
+  subgraph API["apps/backend · Express 5"]
     Routes[Routes: validate request] --> Rules[Rules: policy ranking,<br/>BM25 policy search, templates]
     Routes --> Prompts[Versioned prompts<br/>src/prompts/*.v1.ts]
     Routes --> Guard[guardedStream: first-word & silence limits,<br/>retry, cancel, cost log]
@@ -99,11 +99,11 @@ flowchart LR
 
 **One contract.** `packages/schemas` defines every request, response and stream event with Zod. The API validates requests before doing anything and validates its own responses before sending them. The browser validates every event it receives, so a malformed or unexpected event becomes a friendly error, never rendered text.
 
-**One AI path.** Every model call goes through `guardedStream` ([apps/api/src/ai/guardedStream.ts](apps/api/src/ai/guardedStream.ts)). It races each step against its own abort signal, so neither a hung connection nor a silent stream can outlast the limits. It yields chunks and then exactly one end event, and never throws. A shared SSE writer ([apps/api/src/ai/sse.ts](apps/api/src/ai/sse.ts)) turns that into `token → done` or `notice → fallback → done` events.
+**One AI path.** Every model call goes through `guardedStream` ([apps/backend/src/ai/guardedStream.ts](apps/backend/src/ai/guardedStream.ts)). It races each step against its own abort signal, so neither a hung connection nor a silent stream can outlast the limits. It yields chunks and then exactly one end event, and never throws. A shared SSE writer ([apps/backend/src/ai/sse.ts](apps/backend/src/ai/sse.ts)) turns that into `token → done` or `notice → fallback → done` events.
 
-**Rate limits on every AI endpoint.** Each browser gets an anonymous, http-only session cookie on its first AI request (there is no login). Each session may make 20 AI requests a minute, and a per-IP backstop of 60 a minute stops a client that clears its cookie to get a fresh allowance. Over the limit, the API answers with a JSON `429 { error: { code: "rate_limited", message } }` that says how long to wait (in English or Hindi), plus `Retry-After` and standard `RateLimit` headers. The blocked request never reaches Gemini. Every action shows that message with a Try again option. The counters live in memory ([apps/api/src/middleware/rateLimit.ts](apps/api/src/middleware/rateLimit.ts)); with several API instances they would move to a Redis store.
+**Rate limits on every AI endpoint.** Each browser gets an anonymous, http-only session cookie on its first AI request (there is no login). Each session may make 20 AI requests a minute, and a per-IP backstop of 60 a minute stops a client that clears its cookie to get a fresh allowance. Over the limit, the API answers with a JSON `429 { error: { code: "rate_limited", message } }` that says how long to wait (in English or Hindi), plus `Retry-After` and standard `RateLimit` headers. The blocked request never reaches Gemini. Every action shows that message with a Try again option. The counters live in memory ([apps/backend/src/middleware/rateLimit.ts](apps/backend/src/middleware/rateLimit.ts)); with several API instances they would move to a Redis store.
 
-**Prompts are code.** Each prompt is a versioned export in [apps/api/src/prompts](apps/api/src/prompts) (`summary.v1.ts`, `talk.v1.ts`, `help.v1.ts`, `teach.v1.ts`, `greeting.v1.ts`), selected in `prompts/index.ts` and unit-tested. Queue and policy text are passed as data inside tagged blocks, and the prompt tells the model to treat them as data, not instructions.
+**Prompts are code.** Each prompt is a versioned export in [apps/backend/src/prompts](apps/backend/src/prompts) (`summary.v1.ts`, `talk.v1.ts`, `help.v1.ts`, `teach.v1.ts`, `greeting.v1.ts`), selected in `prompts/index.ts` and unit-tested. Queue and policy text are passed as data inside tagged blocks, and the prompt tells the model to treat them as data, not instructions.
 
 ### How each action works
 
@@ -132,8 +132,8 @@ All AI endpoints return `text/event-stream` with status 200 once streaming start
 
 ### Data
 
-- [apps/api/data/approvals.json](apps/api/data/approvals.json): the four items from the brief, with a `category` and one optional per-item `priority` override.
-- [apps/api/data/approval-policy.md](apps/api/data/approval-policy.md): the policy (**placeholder text for now**). The code reads its "Priority by category" table for ranking and its numbered "How to review" list for Teach me. Help me searches all of its sections.
+- [apps/backend/data/approvals.json](apps/backend/data/approvals.json): the four items from the brief, with a `category` and one optional per-item `priority` override.
+- [apps/backend/data/approval-policy.md](apps/backend/data/approval-policy.md): the policy (**placeholder text for now**). The code reads its "Priority by category" table for ranking and its numbered "How to review" list for Teach me. Help me searches all of its sections.
 
 Both are validated when the API starts, so a broken table or bad item fails fast.
 
@@ -155,7 +155,7 @@ Every AI call writes one JSON line to stdout: feature, model, outcome, failure r
 | Unit + component (web) | Vitest + Testing Library | 102 | Loading, streaming and error states of every view; the please-wait message; malformed events never rendered; abort on close. |
 | End-to-end | Playwright | 18 | All five actions in Chromium against a scripted fake Gemini, including failure paths and the rate limit. |
 
-Learning tests ([apps/api/test/learning](apps/api/test/learning)) record how LangChain's Gemini client really behaves (streaming, abort, usage, errors) before the design relies on it.
+Learning tests ([apps/backend/test/learning](apps/backend/test/learning)) record how LangChain's Gemini client really behaves (streaming, abort, usage, errors) before the design relies on it.
 
 **Test-first history.** Each feature is two commits on `main`: `test: failing tests for …`, then `feat: …` making them pass. Run `git log --oneline` to see the pairs. Bugs found along the way got a failing test before the fix. Examples: an unhandled promise rejection in the Google SDK on cancel (it would crash Node), and React StrictMode sending two Summary requests per open in development.
 

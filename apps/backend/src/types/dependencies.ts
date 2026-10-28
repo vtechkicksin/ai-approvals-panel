@@ -11,9 +11,14 @@ export interface AiDeps {
   createModel: () => ChatGoogleGenerativeAI;
 }
 
-export interface AppDeps {
+/** Shared read-only access required by queue-based features. */
+export interface ApprovalQueueDependencies {
   getApprovals: () => ApprovalItem[];
   priorityTable: PriorityTable;
+}
+
+/** All configured services for assembling the Express application. */
+export interface AppDeps extends ApprovalQueueDependencies {
   webOrigin: string;
   ai: AiDeps;
   policyChunks: PolicyChunk[];
