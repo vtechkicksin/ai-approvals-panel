@@ -21,21 +21,17 @@ import { greetingRouter } from './greeting/greetingRouter';
 export interface AiDeps {
   config: AiConfig;
   logger: CostLogger;
-  /** Builds the model for one call. Throws AiNotConfiguredError when no key is set. */
   createModel: () => ChatGoogleGenerativeAI;
 }
 
 export interface AppDeps {
   getApprovals: () => ApprovalItem[];
   priorityTable: PriorityTable;
-  /** The web app's origin, allowed to call the API from the browser. */
   webOrigin: string;
   ai: AiDeps;
-  /** The policy doc split into sections, for Help me. */
   policyChunks: PolicyChunk[];
 }
 
-/** Loads the seed data once; invalid data or policy fails here, at startup. */
 export function defaultDeps(): AppDeps {
   const approvals = loadApprovals();
   return {
@@ -55,7 +51,6 @@ function defaultAiDeps(): AiDeps {
 
 export function createApp(deps: AppDeps = defaultDeps()): Express {
   const app = express();
-  // The browser app calls the API directly; only its origin may, with cookies.
   app.use(cors({ origin: [deps.webOrigin], credentials: true }));
   app.use(express.json());
 
@@ -64,7 +59,6 @@ export function createApp(deps: AppDeps = defaultDeps()): Express {
     res.json(body);
   });
   app.use('/api/approvals', approvalsRouter(deps));
-  // Every AI endpoint: an anonymous session, then the rate limits, then the route.
   app.use('/api/ai', sessionCookie, ...aiRateLimit(deps.ai.config));
   app.use('/api/ai/summary', summaryRouter(deps));
   app.use('/api/ai/talk', talkRouter(deps));
