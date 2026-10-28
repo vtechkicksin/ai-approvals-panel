@@ -7,11 +7,9 @@ export type PartOfDay = z.infer<typeof partOfDaySchema>;
 
 export const GREETING_MAX_LENGTH = 240;
 
-/** The facts a greeting may mention. Both the browser and the server compute them from the ranked queue. */
 export interface GreetingFacts {
   total: number;
   counts: Partial<Record<PriorityLevel, number>>;
-  /** Title of the first item to review, if any. */
   firstTitle: string | null;
 }
 

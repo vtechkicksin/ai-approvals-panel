@@ -3,7 +3,6 @@ import { z } from 'zod';
 export const languageSchema = z.enum(['en', 'hi']);
 export type Language = z.infer<typeof languageSchema>;
 
-/** Friendly status messages shown in the panel when the AI is not at its best. */
 export const noticeCodeSchema = z.enum(['ai_slow', 'ai_unavailable', 'cut_short', 'rate_limited']);
 export type NoticeCode = z.infer<typeof noticeCodeSchema>;
 
