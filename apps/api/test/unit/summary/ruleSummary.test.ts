@@ -1,5 +1,5 @@
 import { summarySchema, type SummaryCard } from '@approvals/schemas';
-import { buildRuleSummary } from '../../../src/summary/ruleSummary';
+import { buildRuleSummary } from '../../../src/features/summary/ruleSummary';
 import { seedCards } from '../../helpers/summaryKit';
 
 describe('buildRuleSummary', () => {

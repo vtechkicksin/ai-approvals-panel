@@ -1,6 +1,6 @@
-import { findMatches } from '../../../src/help/findMatches';
-import { splitPolicy } from '../../../src/help/policyChunks';
-import { PolicyRetriever } from '../../../src/help/policyRetriever';
+import { findMatches } from '../../../src/features/help/findMatches';
+import { splitPolicy } from '../../../src/policy/policyChunks';
+import { PolicyRetriever } from '../../../src/policy/policyRetriever';
 import { loadPolicyMarkdown } from '../../../src/data/seedData';
 
 const chunks = splitPolicy(loadPolicyMarkdown());

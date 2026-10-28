@@ -1,5 +1,5 @@
 import type { Language, RankedApproval, TeachStep } from '@approvals/schemas';
-import type { PolicyChunk } from '../help/policyChunks';
+import type { PolicyChunk } from '../policy/policyChunks';
 
 export interface TeachPromptInput {
   steps: readonly TeachStep[];

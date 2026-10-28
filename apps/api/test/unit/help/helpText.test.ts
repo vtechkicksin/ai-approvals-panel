@@ -1,5 +1,5 @@
-import { buildHelpFallback, notCoveredText } from '../../../src/help/helpText';
-import { splitPolicy } from '../../../src/help/policyChunks';
+import { buildHelpFallback, notCoveredText } from '../../../src/features/help/helpText';
+import { splitPolicy } from '../../../src/policy/policyChunks';
 import { loadPolicyMarkdown } from '../../../src/data/seedData';
 
 const chunks = splitPolicy(loadPolicyMarkdown());

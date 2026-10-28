@@ -200,13 +200,14 @@ apps/
   api/                 Express API
     data/              seed approvals + approval policy
     src/ai/            guardedStream, SSE writer, model setup, errors, cost log, notices (EN/HI)
+    src/bootstrap/     startup dependency and data assembly
+    src/features/      approvals, greeting, help, summary, talk, and teach modules
+      <feature>/       router, controller, and feature-specific logic
+    src/policy/        priority rules and shared policy retrieval/search
     src/prompts/       versioned prompts (*.v1.ts)
-    src/summary/       partial-JSON parser, streaming extractor, final validation, rule summary
-    src/help/          policy chunks, tokenizer, BM25 retriever, matching
-    src/teach/         guide from the policy, backup text
-    src/talk/          chat history
-    src/greeting/      AI wording check
     src/middleware/    session cookie, rate limits, error handling
+    src/router/        API route composition and health route
+    src/types/         shared application dependency contracts
     test/              unit, integration, learning tests + fake Gemini helper
   web/                 React + Vite app
     src/api/           fetch + SSE clients (validate everything)

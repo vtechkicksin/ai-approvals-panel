@@ -1,5 +1,5 @@
 import { PRIORITY_LEVELS, type ApprovalItem, type PriorityLevel, type RankedApproval } from '@approvals/schemas';
-import type { PriorityTable } from '../policy/priorityTable';
+import type { PriorityTable } from '../../policy/priorityTable';
 
 const DEFAULT_PRIORITY: PriorityLevel = 'medium';
 

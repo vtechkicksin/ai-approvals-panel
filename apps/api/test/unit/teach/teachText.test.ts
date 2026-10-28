@@ -1,6 +1,6 @@
 import { loadPolicyMarkdown } from '../../../src/data/seedData';
-import { splitPolicy } from '../../../src/help/policyChunks';
-import { buildTeachFallback } from '../../../src/teach/teachText';
+import { splitPolicy } from '../../../src/policy/policyChunks';
+import { buildTeachFallback } from '../../../src/features/teach/teachText';
 
 const chunks = splitPolicy(loadPolicyMarkdown());
 const step = { number: 4, text: 'Approve it, or reject it with a clear reason.' };

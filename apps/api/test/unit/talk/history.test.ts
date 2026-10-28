@@ -1,5 +1,5 @@
 import type { ChatMessage } from '@approvals/schemas';
-import { toModelMessages } from '../../../src/talk/history';
+import { toModelMessages } from '../../../src/features/talk/history';
 
 const u = (content: string): ChatMessage => ({ role: 'user', content });
 const a = (content: string): ChatMessage => ({ role: 'assistant', content });

@@ -1,5 +1,5 @@
 import type { Language, TeachStep } from '@approvals/schemas';
-import type { PolicyChunk } from '../help/policyChunks';
+import type { PolicyChunk } from '../../policy/policyChunks';
 
 const TEXT = {
   en: {

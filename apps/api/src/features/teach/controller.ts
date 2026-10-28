@@ -1,17 +1,17 @@
 import { SystemMessage } from '@langchain/core/messages';
 import type { RequestHandler } from 'express';
 import { teachGuideSchema, teachRequestSchema } from '@approvals/schemas';
-import type { AppDeps } from '../app';
-import { guardedStream } from '../ai/guardedStream';
-import { streamTextAnswer } from '../ai/sse';
+import type { AppDeps } from '../../types/dependencies';
+import { guardedStream } from '../../ai/guardedStream';
+import { streamTextAnswer } from '../../ai/sse';
 import { rankApprovals } from '../approvals/rankApprovals';
-import { MIN_SCORE, TOP_K } from '../help/findMatches';
-import { PolicyRetriever } from '../help/policyRetriever';
-import { errorBody } from '../middleware/errors';
-import { teachPrompt } from '../prompts';
+import { MIN_SCORE, TOP_K } from '../../policy/searchConfig';
+import { PolicyRetriever } from '../../policy/policyRetriever';
+import { errorBody } from '../../middleware/errors';
+import { teachPrompt } from '../../prompts';
 import { toModelMessages } from '../talk/history';
-import { buildGuide } from '../teach/guide';
-import { buildTeachFallback } from '../teach/teachText';
+import { buildGuide } from './guide';
+import { buildTeachFallback } from './teachText';
 
 /** GET /api/teach/guide: the fixed guide (no AI). */
 export function teachGuideController(deps: AppDeps): RequestHandler {

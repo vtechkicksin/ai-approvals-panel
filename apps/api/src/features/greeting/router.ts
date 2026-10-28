@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import type { AppDeps } from '../app';
-import { greetingController } from '../controller/greetingController';
+import type { AppDeps } from '../../types/dependencies';
+import { greetingController } from './controller';
 
 export function greetingRouter(deps: AppDeps): Router {
   const router = Router();

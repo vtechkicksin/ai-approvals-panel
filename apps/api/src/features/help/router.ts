@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import type { AppDeps } from '../app';
-import { helpController } from '../controller/helpController';
+import type { AppDeps } from '../../types/dependencies';
+import { helpController } from './controller';
 
 export function helpRouter(deps: AppDeps): Router {
   const router = Router();

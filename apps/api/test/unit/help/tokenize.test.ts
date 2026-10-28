@@ -1,4 +1,4 @@
-import { tokenize } from '../../../src/help/tokenize';
+import { tokenize } from '../../../src/policy/tokenize';
 
 describe('tokenize', () => {
   it('lower-cases and drops punctuation', () => {

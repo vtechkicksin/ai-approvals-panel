@@ -1,5 +1,5 @@
 import type { Language } from '@approvals/schemas';
-import type { PolicyChunk } from '../help/policyChunks';
+import type { PolicyChunk } from '../policy/policyChunks';
 
 export interface HelpPromptInput {
   question: string;

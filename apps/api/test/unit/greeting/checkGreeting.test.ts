@@ -1,4 +1,4 @@
-import { isGreetingValid } from '../../../src/greeting/checkGreeting';
+import { isGreetingValid } from '../../../src/features/greeting/checkGreeting';
 
 const facts = { total: 4, counts: { urgent: 1, high: 1, medium: 2 }, firstTitle: 'Camera Map' };
 

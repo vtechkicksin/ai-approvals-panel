@@ -1,13 +1,13 @@
 import { HumanMessage, SystemMessage } from '@langchain/core/messages';
 import type { RequestHandler } from 'express';
 import { buildGreeting, greetingFacts, greetingRequestSchema, textStreamEventSchema, type TextStreamEvent } from '@approvals/schemas';
-import type { AppDeps } from '../app';
-import { guardedStream } from '../ai/guardedStream';
-import { openSse, streamTextAnswer } from '../ai/sse';
+import type { AppDeps } from '../../types/dependencies';
+import { guardedStream } from '../../ai/guardedStream';
+import { openSse, streamTextAnswer } from '../../ai/sse';
 import { rankApprovals } from '../approvals/rankApprovals';
-import { errorBody } from '../middleware/errors';
-import { greetingPrompt } from '../prompts';
-import { isGreetingValid } from '../greeting/checkGreeting';
+import { errorBody } from '../../middleware/errors';
+import { greetingPrompt } from '../../prompts';
+import { isGreetingValid } from './checkGreeting';
 
 /** POST /api/ai/greeting: optional AI wording of the greeting, checked, with the template as backup. */
 export function greetingController(deps: AppDeps): RequestHandler {

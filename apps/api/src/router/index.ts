@@ -1,12 +1,12 @@
 import { Router } from 'express';
-import type { AppDeps } from '../app';
-import { approvalsRouter } from './approvalsRouter';
-import { greetingRouter } from './greetingRouter';
+import type { AppDeps } from '../types/dependencies';
+import { approvalsRouter } from '../features/approvals/router';
+import { greetingRouter } from '../features/greeting/router';
 import { healthRouter } from './healthRouter';
-import { helpRouter } from './helpRouter';
-import { summaryRouter } from './summaryRouter';
-import { talkRouter } from './talkRouter';
-import { teachGuideRouter, teachRouter } from './teachRouter';
+import { helpRouter } from '../features/help/router';
+import { summaryRouter } from '../features/summary/router';
+import { talkRouter } from '../features/talk/router';
+import { teachGuideRouter, teachRouter } from '../features/teach/router';
 
 /** Registers the API's feature routers and their public URL prefixes. */
 export function apiRouter(deps: AppDeps): Router {

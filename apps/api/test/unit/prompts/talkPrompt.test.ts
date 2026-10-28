@@ -1,7 +1,7 @@
 import { talkPrompt } from '../../../src/prompts';
 import { talkPromptV1 } from '../../../src/prompts/talk.v1';
 import { defaultDeps } from '../../../src/app';
-import { rankApprovals } from '../../../src/approvals/rankApprovals';
+import { rankApprovals } from '../../../src/features/approvals/rankApprovals';
 
 const deps = defaultDeps();
 const ranked = rankApprovals(deps.getApprovals(), deps.priorityTable);

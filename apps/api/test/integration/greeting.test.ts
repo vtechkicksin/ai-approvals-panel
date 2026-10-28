@@ -2,7 +2,7 @@ import request from 'supertest';
 import { apiErrorSchema, buildGreeting, greetingFacts, textStreamEventSchema, type TextStreamEvent } from '@approvals/schemas';
 import { createApp, defaultDeps, type AppDeps } from '../../src/app';
 import { createMemoryCostLogger } from '../../src/ai/costLog';
-import { rankApprovals } from '../../src/approvals/rankApprovals';
+import { rankApprovals } from '../../src/features/approvals/rankApprovals';
 import { emptyChunk, hang, textReply, type FakeReply } from '../helpers/fakeGemini';
 import { fakeModel, testAiConfig } from '../helpers/aiTestKit';
 import { collectText, parseSse } from '../helpers/sse';

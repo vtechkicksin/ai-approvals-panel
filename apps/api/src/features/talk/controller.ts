@@ -1,14 +1,14 @@
 import { SystemMessage } from '@langchain/core/messages';
 import type { RequestHandler } from 'express';
 import { talkRequestSchema } from '@approvals/schemas';
-import type { AppDeps } from '../app';
-import { guardedStream } from '../ai/guardedStream';
-import { message } from '../ai/messages';
-import { streamTextAnswer } from '../ai/sse';
+import type { AppDeps } from '../../types/dependencies';
+import { guardedStream } from '../../ai/guardedStream';
+import { message } from '../../ai/messages';
+import { streamTextAnswer } from '../../ai/sse';
 import { rankApprovals } from '../approvals/rankApprovals';
-import { errorBody } from '../middleware/errors';
-import { talkPrompt } from '../prompts';
-import { toModelMessages } from '../talk/history';
+import { errorBody } from '../../middleware/errors';
+import { talkPrompt } from '../../prompts';
+import { toModelMessages } from './history';
 
 /** POST /api/ai/talk: streams a chat reply about the approvals queue as SSE. */
 export function talkController(deps: AppDeps): RequestHandler {

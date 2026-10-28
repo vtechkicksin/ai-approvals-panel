@@ -1,8 +1,8 @@
 import { teachPrompt } from '../../../src/prompts';
 import { teachPromptV1 } from '../../../src/prompts/teach.v1';
 import { defaultDeps } from '../../../src/app';
-import { rankApprovals } from '../../../src/approvals/rankApprovals';
-import { buildGuide } from '../../../src/teach/guide';
+import { rankApprovals } from '../../../src/features/approvals/rankApprovals';
+import { buildGuide } from '../../../src/features/teach/guide';
 
 const deps = defaultDeps();
 const ranked = rankApprovals(deps.getApprovals(), deps.priorityTable);

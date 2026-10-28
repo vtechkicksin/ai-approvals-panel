@@ -1,5 +1,5 @@
 import type { TeachGuide } from '@approvals/schemas';
-import type { PolicyChunk } from '../help/policyChunks';
+import type { PolicyChunk } from '../../policy/policyChunks';
 
 /** Used when the policy has no numbered review steps. */
 export const DEFAULT_STEPS: readonly string[] = [

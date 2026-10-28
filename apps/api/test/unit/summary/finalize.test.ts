@@ -1,6 +1,6 @@
 import { summarySchema } from '@approvals/schemas';
-import { finalizeFromSnapshot, finalizeSummary } from '../../../src/summary/finalize';
-import { buildRuleSummary } from '../../../src/summary/ruleSummary';
+import { finalizeFromSnapshot, finalizeSummary } from '../../../src/features/summary/finalize';
+import { buildRuleSummary } from '../../../src/features/summary/ruleSummary';
 import { goodSummaryJson, seedCards } from '../../helpers/summaryKit';
 
 const rules = buildRuleSummary(seedCards, 'en');

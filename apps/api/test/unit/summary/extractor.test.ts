@@ -1,5 +1,5 @@
 import { summaryStreamEventSchema, type SummaryStreamEvent } from '@approvals/schemas';
-import { createSummaryExtractor } from '../../../src/summary/extractor';
+import { createSummaryExtractor } from '../../../src/features/summary/extractor';
 import { chunkText, goodSummaryJson, seedCards } from '../../helpers/summaryKit';
 
 function feed(chunks: string[], { finish = false } = {}) {

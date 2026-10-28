@@ -7,15 +7,15 @@ import {
   type HelpStreamEvent,
   type PolicyCitation,
 } from '@approvals/schemas';
-import type { AppDeps } from '../app';
-import { guardedStream } from '../ai/guardedStream';
-import { openSse, streamTextAnswer } from '../ai/sse';
-import { errorBody } from '../middleware/errors';
-import { helpPrompt } from '../prompts';
-import { findMatches } from '../help/findMatches';
-import { buildHelpFallback, notCoveredText } from '../help/helpText';
-import type { PolicyChunk } from '../help/policyChunks';
-import { PolicyRetriever } from '../help/policyRetriever';
+import type { AppDeps } from '../../types/dependencies';
+import { guardedStream } from '../../ai/guardedStream';
+import { openSse, streamTextAnswer } from '../../ai/sse';
+import { errorBody } from '../../middleware/errors';
+import { helpPrompt } from '../../prompts';
+import { findMatches } from './findMatches';
+import { buildHelpFallback, notCoveredText } from './helpText';
+import type { PolicyChunk } from '../../policy/policyChunks';
+import { PolicyRetriever } from '../../policy/policyRetriever';
 
 function toCitation(chunk: PolicyChunk): PolicyCitation {
   const flat = chunk.text.replace(/\s+/g, ' ');

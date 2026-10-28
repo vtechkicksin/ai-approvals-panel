@@ -1,7 +1,7 @@
 import { teachGuideSchema } from '@approvals/schemas';
 import { loadPolicyMarkdown } from '../../../src/data/seedData';
-import { splitPolicy } from '../../../src/help/policyChunks';
-import { buildGuide, DEFAULT_STEPS } from '../../../src/teach/guide';
+import { splitPolicy } from '../../../src/policy/policyChunks';
+import { buildGuide, DEFAULT_STEPS } from '../../../src/features/teach/guide';
 
 describe('buildGuide', () => {
   it('takes the five review steps from the policy\'s "How to review" section', () => {

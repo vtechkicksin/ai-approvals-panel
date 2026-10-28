@@ -1,4 +1,4 @@
-import { parsePartialJson } from '../../../src/summary/partialJson';
+import { parsePartialJson } from '../../../src/features/summary/partialJson';
 
 describe('parsePartialJson', () => {
   it('parses complete JSON', () => {

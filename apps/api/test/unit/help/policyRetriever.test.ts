@@ -1,5 +1,5 @@
-import type { PolicyChunk } from '../../../src/help/policyChunks';
-import { PolicyRetriever } from '../../../src/help/policyRetriever';
+import type { PolicyChunk } from '../../../src/policy/policyChunks';
+import { PolicyRetriever } from '../../../src/policy/policyRetriever';
 
 const chunks: PolicyChunk[] = [
   { id: 'a', heading: 'Cameras', text: 'Camera maps show every camera position on site.' },

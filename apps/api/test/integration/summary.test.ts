@@ -3,7 +3,7 @@ import { apiErrorSchema, summaryStreamEventSchema, type SummaryStreamEvent } fro
 import { createApp, defaultDeps, type AppDeps } from '../../src/app';
 import { createMemoryCostLogger } from '../../src/ai/costLog';
 import { AiNotConfiguredError } from '../../src/ai/errors';
-import { buildRuleSummary } from '../../src/summary/ruleSummary';
+import { buildRuleSummary } from '../../src/features/summary/ruleSummary';
 import { emptyChunk, hang, textPieces, textReply, type FakeReply } from '../helpers/fakeGemini';
 import { fakeModel, testAiConfig } from '../helpers/aiTestKit';
 import { collectText, parseSse } from '../helpers/sse';

@@ -1,6 +1,6 @@
 import { helpPrompt } from '../../../src/prompts';
 import { helpPromptV1 } from '../../../src/prompts/help.v1';
-import { splitPolicy } from '../../../src/help/policyChunks';
+import { splitPolicy } from '../../../src/policy/policyChunks';
 import { loadPolicyMarkdown } from '../../../src/data/seedData';
 
 const chunks = splitPolicy(loadPolicyMarkdown());

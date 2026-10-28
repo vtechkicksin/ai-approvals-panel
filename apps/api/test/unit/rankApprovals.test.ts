@@ -1,5 +1,5 @@
 import type { ApprovalItem } from '@approvals/schemas';
-import { rankApprovals } from '../../src/approvals/rankApprovals';
+import { rankApprovals } from '../../src/features/approvals/rankApprovals';
 import type { PriorityTable } from '../../src/policy/priorityTable';
 
 const table: PriorityTable = new Map([

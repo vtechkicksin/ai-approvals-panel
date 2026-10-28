@@ -1,9 +1,6 @@
-import type { PolicyChunk } from './policyChunks';
-import type { PolicyRetriever, ScoredChunk } from './policyRetriever';
-
-/** Below this BM25 score a section is not considered a match. */
-export const MIN_SCORE = 0.5;
-export const TOP_K = 3;
+import type { PolicyChunk } from '../../policy/policyChunks';
+import type { PolicyRetriever, ScoredChunk } from '../../policy/policyRetriever';
+import { MIN_SCORE, TOP_K } from '../../policy/searchConfig';
 
 export type MatchResult =
   /** Search found relevant sections. */

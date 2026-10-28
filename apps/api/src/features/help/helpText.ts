@@ -1,5 +1,5 @@
 import type { Language } from '@approvals/schemas';
-import type { PolicyChunk } from './policyChunks';
+import type { PolicyChunk } from '../../policy/policyChunks';
 
 const TEXT = {
   en: {

@@ -1,4 +1,4 @@
-import { splitPolicy } from '../../../src/help/policyChunks';
+import { splitPolicy } from '../../../src/policy/policyChunks';
 import { loadPolicyMarkdown } from '../../../src/data/seedData';
 
 describe('splitPolicy', () => {
