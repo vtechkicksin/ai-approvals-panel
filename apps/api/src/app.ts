@@ -1,7 +1,6 @@
 import cors from 'cors';
 import express, { type Express } from 'express';
-import { healthResponseSchema, type ApprovalItem, type HealthResponse } from '@approvals/schemas';
-import { approvalsRouter } from './approvals/approvalsRouter';
+import type { ApprovalItem } from '@approvals/schemas';
 import { loadApprovals, loadPolicyMarkdown, loadPriorityTable } from './data/seedData';
 import { errorHandler, notFound } from './middleware/errors';
 import { aiRateLimit } from './middleware/rateLimit';
@@ -11,12 +10,8 @@ import type { ChatGoogleGenerativeAI } from '@langchain/google-genai';
 import { createChatModel } from './ai/chatModel';
 import { loadAiConfig, type AiConfig } from './ai/config';
 import { createConsoleCostLogger, type CostLogger } from './ai/costLog';
-import { summaryRouter } from './summary/summaryRouter';
-import { talkRouter } from './talk/talkRouter';
-import { helpRouter } from './help/helpRouter';
 import { splitPolicy, type PolicyChunk } from './help/policyChunks';
-import { teachGuideRouter, teachRouter } from './teach/teachRouter';
-import { greetingRouter } from './greeting/greetingRouter';
+import { apiRouter } from './router';
 
 export interface AiDeps {
   config: AiConfig;
@@ -54,18 +49,8 @@ export function createApp(deps: AppDeps = defaultDeps()): Express {
   app.use(cors({ origin: [deps.webOrigin], credentials: true }));
   app.use(express.json());
 
-  app.get('/api/health', (_req, res) => {
-    const body: HealthResponse = healthResponseSchema.parse({ status: 'ok' });
-    res.json(body);
-  });
-  app.use('/api/approvals', approvalsRouter(deps));
   app.use('/api/ai', sessionCookie, ...aiRateLimit(deps.ai.config));
-  app.use('/api/ai/summary', summaryRouter(deps));
-  app.use('/api/ai/talk', talkRouter(deps));
-  app.use('/api/ai/help', helpRouter(deps));
-  app.use('/api/teach/guide', teachGuideRouter(deps));
-  app.use('/api/ai/teach', teachRouter(deps));
-  app.use('/api/ai/greeting', greetingRouter(deps));
+  app.use(apiRouter(deps));
 
   app.use(notFound);
   app.use(errorHandler);
